@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Escáner Tapwork</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --accent: #22d3ee;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 20% 20%, #1e293b, #0b1224 60%);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .card {
+      width: min(960px, 100%);
+      background: var(--card);
+      border: 1px solid #1f2937;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    h1 { margin: 0; letter-spacing: -0.02em; }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+    button, select {
+      background: #0ea5e9;
+      color: #0b1224;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    select { background: #1f2937; color: var(--text); border: 1px solid #2f3645; }
+    #status { margin-top: 8px; color: var(--muted); }
+    #preview { width: 100%; max-height: 360px; border-radius: 14px; background: #0b1224; object-fit: cover; }
+    .row { display: grid; grid-template-columns: 1fr 320px; gap: 16px; }
+    @media (max-width: 900px) { .row { grid-template-columns: 1fr; } }
+    textarea, input {
+      width: 100%;
+      background: #0b1224;
+      border: 1px solid #1f2937;
+      border-radius: 10px;
+      color: var(--text);
+      padding: 10px;
+      resize: vertical;
+    }
+    .log {
+      background: #0b1224;
+      border-radius: 12px;
+      padding: 12px;
+      min-height: 120px;
+      font-family: "Fira Code", monospace;
+      color: #cbd5e1;
+    }
+    .pill { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 999px; background: #1f2937; font-size: 12px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <header>
+      <div>
+        <div class="pill">Tapwork</div>
+        <h1>Escáner de asistencia</h1>
+        <p id="status">Cámara lista</p>
+      </div>
+      <div class="controls">
+        <select id="action">
+          <option value="check_in">Check-in</option>
+          <option value="check_out">Check-out</option>
+        </select>
+        <button id="start">Iniciar cámara</button>
+        <button id="stop">Detener</button>
+      </div>
+    </header>
+    <div class="row">
+      <div>
+        <video id="preview" autoplay playsinline muted></video>
+      </div>
+      <div>
+        <label>Notas</label>
+        <textarea id="notes" rows="4" placeholder="Opcional"></textarea>
+        <label>API base</label>
+        <input id="apiBase" value="http://localhost:8000" />
+        <div class="log" id="log">Esperando código...</div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <script>
+    const video = document.getElementById("preview");
+    const logBox = document.getElementById("log");
+    const statusBox = document.getElementById("status");
+    const apiBase = document.getElementById("apiBase");
+    const actionSelect = document.getElementById("action");
+    const notes = document.getElementById("notes");
+    let stream, rafId;
+
+    async function startCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        video.srcObject = stream;
+        statusBox.textContent = "Escaneando...";
+        tick();
+      } catch (err) {
+        statusBox.textContent = "No se pudo acceder a la cámara";
+        console.error(err);
+      }
+    }
+
+    function stopCamera() {
+      if (rafId) cancelAnimationFrame(rafId);
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      statusBox.textContent = "Cámara detenida";
+    }
+
+    async function sendScan(data) {
+      const body = {
+        code_data: data,
+        action: actionSelect.value,
+        notes: notes.value || undefined
+      };
+      const res = await fetch(`${apiBase.value}/api/attendance/scan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      const json = await res.json();
+      logBox.textContent = res.ok ? `OK: ${JSON.stringify(json)}` : `Error: ${json.detail || res.status}`;
+    }
+
+    function tick() {
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, canvas.width, canvas.height);
+        if (code) {
+          statusBox.textContent = "Código detectado";
+          sendScan(code.data);
+        }
+      }
+      rafId = requestAnimationFrame(tick);
+    }
+
+    document.getElementById("start").onclick = startCamera;
+    document.getElementById("stop").onclick = stopCamera;
+  </script>
+</body>
+</html>

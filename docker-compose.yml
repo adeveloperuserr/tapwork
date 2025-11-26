@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    depends_on:
+      - db
+      - mailhog
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://tapwork:tapwork@db:5432/tapwork
+      - SECRET_KEY=change-this-secret
+      - SMTP_HOST=mailhog
+      - SMTP_PORT=1025
+      - MAIL_FROM=noreply@tapwork.local
+      - FRONTEND_BASE_URL=http://localhost:3000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: tapwork
+      POSTGRES_USER: tapwork
+      POSTGRES_PASSWORD: tapwork
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    ports:
+      - "8025:8025"
+
+volumes:
+  db_data:
+
