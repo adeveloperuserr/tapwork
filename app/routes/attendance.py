@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import and_, select
@@ -24,7 +24,7 @@ async def _status_for_check_in(user: User, check_in: datetime) -> str:
 
 @router.post("/scan", response_model=schemas.AttendanceOut)
 async def scan_attendance(payload: schemas.AttendanceCreate, db: AsyncSession = Depends(get_db)):
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     qr_result = await db.execute(
         select(QRCode)
         .where(QRCode.code_data == payload.code_data)
@@ -76,8 +76,10 @@ async def scan_attendance(payload: schemas.AttendanceCreate, db: AsyncSession = 
 
 @router.get("/me", response_model=list[schemas.AttendanceOut])
 async def my_attendance(
-    start: datetime = Query(default_factory=lambda: datetime.utcnow() - timedelta(days=30)),
-    end: datetime = Query(default_factory=datetime.utcnow),
+    start: datetime = Query(default_factory=lambda: datetime.now(timezone.utc) - timedelta(days=30)),
+    end: datetime = Query(default_factory=lambda: datetime.now(timezone.utc)),
+    limit: int = Query(default=100, le=500, description="Máximo de registros a retornar"),
+    offset: int = Query(default=0, ge=0, description="Offset para paginación"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -87,6 +89,8 @@ async def my_attendance(
         .where(AttendanceRecord.check_in >= start)
         .where(AttendanceRecord.check_in <= end)
         .order_by(AttendanceRecord.check_in.desc())
+        .limit(limit)
+        .offset(offset)
     )
     return result.scalars().all()
 

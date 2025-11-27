@@ -16,3 +16,4 @@ aiosmtplib==2.0.2
 fpdf2==2.7.5
 orjson==3.9.10
 psycopg[binary]==3.1.12
+slowapi==0.1.9

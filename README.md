@@ -2,11 +2,22 @@
 
 FastAPI + PostgreSQL starter for user registration, email verification, barcode-based attendance, reporting, and optional biometrics.
 
+## ✨ Features
+
+- 🔐 **Seguridad robusta**: JWT auth, validación de contraseñas, rate limiting, CORS configurable
+- 👥 **Gestión de usuarios**: Registro, verificación de email, recuperación de contraseña
+- 📊 **Control de asistencia**: Check-in/out con códigos QR, estado (a tiempo/tarde), reportes
+- 🏢 **Administración**: Roles, departamentos, turnos, permisos
+- 📧 **Notificaciones**: Emails automáticos para registro, asistencia y recuperación
+- 🔍 **Auditoría**: Logs completos con IP, usuario, acción y cambios
+- 📱 **Scanner web**: Interfaz HTML simple para escanear QR con webcam
+
 ## Stack
 - FastAPI with JWT auth and role-based guards
 - PostgreSQL (async SQLAlchemy 2.x) + Alembic migrations
 - Mailhog (local SMTP) for notifications
 - QR generation with `qrcode`
+- Rate limiting with `slowapi`
 - Simple web scanner (`frontend/scan.html`) using webcam + jsQR
 
 ## Quick start
@@ -48,6 +59,69 @@ Alembic reads connection info from `.env` via `app.config.Settings`.
 - Biometric features only store a provided hash/template (Base64); matching is out of scope and should be implemented by an external verifier.
 - The app creates tables on startup for convenience; prefer Alembic in real deployments.
 
-## What’s included / pending
-- Included: registration, email verification, password resets, attendance check-in/out by QR, notifications (registration/reset/attendance with opt-out flags), admin management, reports (CSV/PDF), optional biometric storage, web scanner UI.
-- Pending: production-grade RBAC policies, biometric matching, rate limiting, audit log viewer UI, and e2e tests. Let me know if you want these added next.
+## 🔒 Seguridad
+
+### Validación de contraseñas
+Las contraseñas deben cumplir:
+- Mínimo 8 caracteres
+- Al menos una mayúscula
+- Al menos una minúscula
+- Al menos un número
+
+### Rate Limiting
+Protección contra fuerza bruta:
+- Registro: 5 intentos/minuto
+- Login: 10 intentos/minuto
+- Reset password: 3 intentos/minuto
+
+### CORS Configurable
+Configura `ALLOWED_ORIGINS` en `.env`:
+```bash
+ALLOWED_ORIGINS=http://localhost:3000,https://miapp.com
+```
+
+### SECRET_KEY
+⚠️ **IMPORTANTE**: Genera una clave segura para producción:
+```bash
+python -c 'import secrets; print(secrets.token_urlsafe(32))'
+```
+
+## 🚀 Despliegue en Hosting Gratuito
+
+Ver **[DEPLOYMENT.md](DEPLOYMENT.md)** para guías detalladas de despliegue en:
+- Railway (recomendado)
+- Render
+- Fly.io
+
+## 📝 Credenciales por Defecto
+
+Después de ejecutar `seed.py`:
+```
+Email: admin@tapwork.local
+Password: Admin123!
+```
+
+⚠️ **Cambia las credenciales en producción** configurando `ADMIN_EMAIL` y `ADMIN_PASSWORD` en `.env`
+
+## What's included
+- ✅ Registro y autenticación con JWT
+- ✅ Verificación de email
+- ✅ Recuperación de contraseña
+- ✅ Validación robusta de contraseñas
+- ✅ Rate limiting anti fuerza bruta
+- ✅ Control de asistencia con QR (check-in/out)
+- ✅ Notificaciones por email (con opt-out)
+- ✅ Gestión admin (usuarios, roles, departamentos, turnos)
+- ✅ Reportes (CSV/PDF)
+- ✅ Paginación en endpoints
+- ✅ Audit logs con IP
+- ✅ CORS configurable
+- ✅ Almacenamiento biométrico opcional
+- ✅ Scanner web UI
+
+## Pendiente
+- Production-grade RBAC policies
+- Biometric matching implementation
+- Audit log viewer UI
+- Tests (unit + e2e)
+- Redis caching

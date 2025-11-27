@@ -1,7 +1,9 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from .. import schemas
 from ..dependencies import get_current_user
@@ -18,15 +20,17 @@ from ..utils.security import (
 from ..database import get_db
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+limiter = Limiter(key_func=get_remote_address)
 
 
-async def _log(db: AsyncSession, user_id: uuid.UUID | None, action: str, resource: str, changes: dict | None = None):
-    db.add(AuditLog(user_id=user_id, action=action, resource=resource, changes=changes))
+async def _log(db: AsyncSession, user_id: uuid.UUID | None, action: str, resource: str, changes: dict | None = None, ip_address: str | None = None):
+    db.add(AuditLog(user_id=user_id, action=action, resource=resource, changes=changes, ip_address=ip_address))
     await db.commit()
 
 
 @router.post("/register", response_model=schemas.AuthResponse, status_code=status.HTTP_201_CREATED)
-async def register(payload: schemas.RegistrationRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("5/minute")
+async def register(request: Request, payload: schemas.RegistrationRequest, db: AsyncSession = Depends(get_db)):
     # Validate unique email and employee
     existing = await db.execute(select(User).where((User.email == payload.email) | (User.employee_id == payload.employee_id)))
     if existing.scalar_one_or_none():
@@ -58,13 +62,14 @@ async def register(payload: schemas.RegistrationRequest, db: AsyncSession = Depe
         subject, recipient, html = build_verification_email(user.email, verify_token)
         await send_email(subject, recipient, "Verifica tu correo", html)
 
-    await _log(db, user.id, "CREATE", "user", {"user": str(user.id)})
+    await _log(db, user.id, "CREATE", "user", {"user": str(user.id)}, ip_address=request.client.host if request.client else None)
     tokens = schemas.AuthTokens(access_token=create_access_token(str(user.id)))
     return schemas.AuthResponse(user=user, tokens=tokens)
 
 
 @router.post("/login", response_model=schemas.AuthResponse)
-async def login(payload: schemas.LoginRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("10/minute")
+async def login(request: Request, payload: schemas.LoginRequest, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email == payload.email))
     user = result.scalar_one_or_none()
     if not user or not verify_password(payload.password, user.password_hash):
@@ -77,7 +82,7 @@ async def login(payload: schemas.LoginRequest, db: AsyncSession = Depends(get_db
 
 
 @router.post("/verify-email")
-async def verify_email(payload: schemas.EmailVerificationRequest, db: AsyncSession = Depends(get_db)):
+async def verify_email(request: Request, payload: schemas.EmailVerificationRequest, db: AsyncSession = Depends(get_db)):
     try:
         data = verify_email_token(payload.token)
     except ValueError:
@@ -90,7 +95,7 @@ async def verify_email(payload: schemas.EmailVerificationRequest, db: AsyncSessi
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     user.is_email_verified = True
     await db.commit()
-    await _log(db, user.id, "VERIFY", "user", {"verified": True})
+    await _log(db, user.id, "VERIFY", "user", {"verified": True}, ip_address=request.client.host if request.client else None)
     return {"detail": "Correo verificado"}
 
 
@@ -109,7 +114,8 @@ def create_token_payload(token: str, expected_type: str) -> dict:
 
 
 @router.post("/password-reset")
-async def request_password_reset(payload: schemas.PasswordResetRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("3/minute")
+async def request_password_reset(request: Request, payload: schemas.PasswordResetRequest, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email == payload.email))
     user = result.scalar_one_or_none()
     if not user:
@@ -118,12 +124,12 @@ async def request_password_reset(payload: schemas.PasswordResetRequest, db: Asyn
     if user.notification_preferences.get("reset", True):
         subject, recipient, html = build_reset_email(user.email, reset_token)
         await send_email(subject, recipient, "Restablecer contraseña", html)
-    await _log(db, user.id, "REQUEST_RESET", "user", None)
+    await _log(db, user.id, "REQUEST_RESET", "user", None, ip_address=request.client.host if request.client else None)
     return {"detail": "Si el correo existe, se enviará un enlace"}
 
 
 @router.post("/password-reset/confirm")
-async def confirm_password_reset(payload: schemas.PasswordResetConfirm, db: AsyncSession = Depends(get_db)):
+async def confirm_password_reset(request: Request, payload: schemas.PasswordResetConfirm, db: AsyncSession = Depends(get_db)):
     try:
         data = create_token_payload(payload.token, expected_type="reset")
     except ValueError:
@@ -135,7 +141,7 @@ async def confirm_password_reset(payload: schemas.PasswordResetConfirm, db: Asyn
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     user.password_hash = hash_password(payload.new_password)
     await db.commit()
-    await _log(db, user.id, "RESET", "user", None)
+    await _log(db, user.id, "RESET", "user", None, ip_address=request.client.host if request.client else None)
     return {"detail": "Contraseña actualizada"}
 
 

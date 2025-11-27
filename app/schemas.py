@@ -1,8 +1,9 @@
 import uuid
 from datetime import datetime, time
 from typing import Any, Literal, Optional
+import re
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 class RoleBase(BaseModel):
@@ -75,6 +76,19 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str
 
+    @field_validator('password')
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError('La contraseña debe tener al menos 8 caracteres')
+        if not re.search(r'[A-Z]', v):
+            raise ValueError('La contraseña debe tener al menos una mayúscula')
+        if not re.search(r'[a-z]', v):
+            raise ValueError('La contraseña debe tener al menos una minúscula')
+        if not re.search(r'[0-9]', v):
+            raise ValueError('La contraseña debe tener al menos un número')
+        return v
+
 
 class UserUpdate(BaseModel):
     first_name: str | None = None
@@ -125,6 +139,19 @@ class PasswordResetRequest(BaseModel):
 class PasswordResetConfirm(BaseModel):
     token: str
     new_password: str
+
+    @field_validator('new_password')
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError('La contraseña debe tener al menos 8 caracteres')
+        if not re.search(r'[A-Z]', v):
+            raise ValueError('La contraseña debe tener al menos una mayúscula')
+        if not re.search(r'[a-z]', v):
+            raise ValueError('La contraseña debe tener al menos una minúscula')
+        if not re.search(r'[0-9]', v):
+            raise ValueError('La contraseña debe tener al menos un número')
+        return v
 
 
 class QRCodeOut(BaseModel):

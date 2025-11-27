@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, time
+from datetime import datetime, time, timezone
 
 from sqlalchemy import (
     Boolean,
@@ -22,6 +22,10 @@ def default_uuid() -> uuid.UUID:
     return uuid.uuid4()
 
 
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
 class Role(Base):
     __tablename__ = "roles"
 
@@ -29,7 +33,7 @@ class Role(Base):
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     permissions: Mapped[dict] = mapped_column(JSONB, default=dict)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
 
     users: Mapped[list["User"]] = relationship("User", back_populates="role")
 
@@ -41,7 +45,7 @@ class Department(Base):
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     manager_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
 
     users: Mapped[list["User"]] = relationship("User", back_populates="department", foreign_keys="User.department_id")
     manager: Mapped["User | None"] = relationship("User", foreign_keys=[manager_id], post_update=True)
@@ -56,7 +60,7 @@ class Shift(Base):
     end_time: Mapped[time] = mapped_column(Time, nullable=False)
     grace_period_minutes: Mapped[int] = mapped_column(default=0)
     working_days: Mapped[list[int]] = mapped_column(JSONB, default=list)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
 
     users: Mapped[list["User"]] = relationship("User", back_populates="shift")
 
@@ -76,8 +80,8 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_email_verified: Mapped[bool] = mapped_column(Boolean, default=False)
     notification_preferences: Mapped[dict] = mapped_column(JSONB, default=lambda: {"registration": True, "reset": True, "attendance": True})
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
 
     role: Mapped["Role | None"] = relationship("Role", back_populates="users")
     department: Mapped["Department | None"] = relationship("Department", back_populates="users", foreign_keys=[department_id])
@@ -97,13 +101,13 @@ class AttendanceRecord(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=default_uuid)
     user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    check_in: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+    check_in: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utc_now, index=True)
     check_out: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="on-time", index=True)
     location: Mapped[str | None] = mapped_column(String(255))
     notes: Mapped[str | None] = mapped_column(Text)
     shift_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("shifts.id"))
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
 
     user: Mapped["User"] = relationship("User", back_populates="attendance_records")
     shift: Mapped["Shift | None"] = relationship("Shift")
@@ -120,7 +124,7 @@ class QRCode(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=default_uuid)
     user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
     code_data: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    generated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    generated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
     expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
@@ -138,7 +142,7 @@ class BiometricData(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     biometric_type: Mapped[str] = mapped_column(String(50), nullable=False)
     biometric_hash: Mapped[bytes] = mapped_column(nullable=False)
-    enrolled_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    enrolled_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
     last_verified_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     user: Mapped["User"] = relationship("User", back_populates="biometric_data")
@@ -155,6 +159,6 @@ class AuditLog(Base):
     resource: Mapped[str] = mapped_column(String(50), nullable=False)
     changes: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     ip_address: Mapped[str | None] = mapped_column(String(45))
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, index=True)
 
     user: Mapped["User | None"] = relationship("User", back_populates="audit_logs")
