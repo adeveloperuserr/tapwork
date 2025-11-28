@@ -28,7 +28,7 @@ async def seed():
                 session.add(Role(name=name, description=description, permissions=permissions))
         await session.commit()
 
-        admin_email = os.getenv("ADMIN_EMAIL", "admin@example.com")
+        admin_email = os.getenv("ADMIN_EMAIL", "adeveloper.user@gmail.com")
         admin_password = os.getenv("ADMIN_PASSWORD", "Admin123!")  # Contraseña por defecto con validación
         existing_admin = await session.scalar(select(User).where(User.email == admin_email))
         if not existing_admin:
