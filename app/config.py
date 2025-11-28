@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", case_sensitive=False)
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", case_sensitive=False, extra='ignore')
 
     app_name: str = "tapwork"
     environment: str = "development"
@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     smtp_username: str | None = None
     smtp_password: str | None = None
     smtp_tls: bool = False
-    mail_from: EmailStr = EmailStr("noreply@example.com")
+    mail_from: EmailStr = "noreply@example.com"
     frontend_base_url: str = "http://localhost:3000"
     api_base_url: str = "http://localhost:8000"
     enable_biometric: bool = False
