@@ -54,7 +54,7 @@ docker compose exec api python scripts/seed.py
 ```
 
 **Credenciales creadas:**
-- Email: `admin@tapwork.local`
+- Email: `admin@example.com`
 - Password: `Admin123!`
 
 ---
@@ -94,7 +94,7 @@ Deberías ver:
 4. Ingresa:
    ```json
    {
-     "email": "admin@tapwork.local",
+     "email": "admin@example.com",
      "password": "Admin123!"
    }
    ```
@@ -116,7 +116,7 @@ Deberías ver:
 curl -X POST http://localhost:8000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "admin@tapwork.local",
+    "email": "admin@example.com",
     "password": "Admin123!"
   }'
 ```

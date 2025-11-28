@@ -97,7 +97,7 @@ Ver **[DEPLOYMENT.md](DEPLOYMENT.md)** para guías detalladas de despliegue en:
 
 Después de ejecutar `seed.py`:
 ```
-Email: admin@tapwork.local
+Email: admin@example.com
 Password: Admin123!
 ```
 
