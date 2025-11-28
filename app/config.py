@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     smtp_username: str | None = None
     smtp_password: str | None = None
     smtp_tls: bool = False
-    mail_from: EmailStr = EmailStr("noreply@example.com")
+    mail_from: EmailStr = "noreply@example.com"
     frontend_base_url: str = "http://localhost:3000"
     api_base_url: str = "http://localhost:8000"
     enable_biometric: bool = False
