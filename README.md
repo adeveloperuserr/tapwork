@@ -98,7 +98,7 @@ Ver **[DEPLOYMENT.md](DEPLOYMENT.md)** para guías detalladas de despliegue en:
 Después de ejecutar `seed.py`:
 ```
 Email: adeveloper.user@gmail.com
-Password: Admin123!
+Password: aDeveloperUser2025$
 ```
 
 ⚠️ **Cambia las credenciales en producción** configurando `ADMIN_EMAIL` y `ADMIN_PASSWORD` en `.env`

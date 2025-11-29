@@ -80,7 +80,7 @@ git pull origin claude/review-code-testing-015UhRWtG1JgsCTcSjpEoBHy
 
 ```
 Email: adeveloper.user@gmail.com
-Password: Admin123!
+Password: aDeveloperUser2025$
 ```
 
 ---

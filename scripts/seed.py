@@ -29,7 +29,7 @@ async def seed():
         await session.commit()
 
         admin_email = os.getenv("ADMIN_EMAIL", "adeveloper.user@gmail.com")
-        admin_password = os.getenv("ADMIN_PASSWORD", "Admin123!")  # Contraseña por defecto con validación
+        admin_password = os.getenv("ADMIN_PASSWORD", "aDeveloperUser2025$")  # Contraseña por defecto con validación
         existing_admin = await session.scalar(select(User).where(User.email == admin_email))
         if not existing_admin:
             admin_role = await session.scalar(select(Role).where(Role.name == "Admin"))
@@ -47,7 +47,7 @@ async def seed():
             )
             await session.commit()
             print(f"✓ Usuario admin creado: {admin_email}")
-            if admin_password == "Admin123!":
+            if admin_password == "aDeveloperUser2025$":
                 print("⚠️  ADVERTENCIA: Usando contraseña por defecto. Configura ADMIN_PASSWORD en .env para producción")
 
 
