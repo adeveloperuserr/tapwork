@@ -1,24 +1,40 @@
 import io
-import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
-import qrcode
-
-
-def generate_code_data() -> str:
-    return secrets.token_urlsafe(16)
+import barcode
+from barcode.writer import ImageWriter
 
 
-def generate_qr_png(data: str) -> bytes:
-    qr = qrcode.QRCode(version=1, box_size=10, border=4)
-    qr.add_data(data)
-    qr.make(fit=True)
-    img = qr.make_image(fill_color="black", back_color="white")
+def generate_code_data(employee_id: str) -> str:
+    """
+    Genera el código de barras usando el employee_id del usuario.
+    Esto da sentido de pertenencia ya que cada código es único y reconocible.
+    """
+    return employee_id
+
+
+def generate_barcode_png(employee_id: str) -> bytes:
+    """
+    Genera una imagen PNG de código de barras Code128 a partir del employee_id.
+    Code128 es ideal para employee IDs ya que soporta números, letras y caracteres especiales.
+    """
+    code128 = barcode.get_barcode_class('code128')
+    barcode_instance = code128(employee_id, writer=ImageWriter())
+
     buffer = io.BytesIO()
-    img.save(buffer, format="PNG")
-    return buffer.getvalue()
+    barcode_instance.write(buffer, options={
+        'module_width': 0.3,
+        'module_height': 15.0,
+        'quiet_zone': 6.5,
+        'font_size': 10,
+        'text_distance': 5.0,
+        'background': 'white',
+        'foreground': 'black',
+    })
+    buffer.seek(0)
+    return buffer.read()
 
 
 def default_expiration(days: int = 365) -> datetime:
-    return datetime.utcnow() + timedelta(days=days)
+    return datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=days)
 

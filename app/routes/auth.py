@@ -9,7 +9,7 @@ from .. import schemas
 from ..dependencies import get_current_user
 from ..models import AuditLog, QRCode, Role, User
 from ..utils import barcode
-from ..utils.email import build_reset_email, build_verification_email, send_email
+from ..utils.email import build_reset_email, build_verification_email, build_welcome_email, send_email
 from ..utils.security import (
     create_access_token,
     create_email_verification_token,
@@ -52,15 +52,36 @@ async def register(request: Request, payload: schemas.RegistrationRequest, db: A
     db.add(user)
     await db.flush()
 
-    qr = QRCode(user_id=user.id, code_data=barcode.generate_code_data(), expires_at=barcode.default_expiration(), is_active=True)
-    db.add(qr)
+    # Generar código de barras usando el employee_id para sentido de pertenencia
+    barcode_code = QRCode(
+        user_id=user.id,
+        code_data=barcode.generate_code_data(user.employee_id),
+        expires_at=barcode.default_expiration(),
+        is_active=True
+    )
+    db.add(barcode_code)
     await db.commit()
     await db.refresh(user)
 
-    verify_token = create_email_verification_token(str(user.id))
+    # Enviar emails de verificación y bienvenida
     if user.notification_preferences.get("registration", True):
+        # Email de verificación
+        verify_token = create_email_verification_token(str(user.id))
         subject, recipient, html = build_verification_email(user.email, verify_token)
         await send_email(subject, recipient, "Verifica tu correo", html)
+
+        # Email de bienvenida con código de barras adjunto
+        subject_welcome, recipient_welcome, html_welcome = build_welcome_email(
+            user.email, user.first_name, user.employee_id
+        )
+        barcode_png = barcode.generate_barcode_png(user.employee_id)
+        await send_email(
+            subject_welcome,
+            recipient_welcome,
+            f"Bienvenido {user.first_name}",
+            html_welcome,
+            attachments=[(f"barcode_{user.employee_id}.png", barcode_png, "image/png")]
+        )
 
     await _log(db, user.id, "CREATE", "user", {"user": str(user.id)}, ip_address=request.client.host if request.client else None)
     tokens = schemas.AuthTokens(access_token=create_access_token(str(user.id)))

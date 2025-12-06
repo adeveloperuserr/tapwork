@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Escáner Tapwork</title>
+  <title>Escáner de Códigos de Barras - Tapwork</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -79,7 +79,7 @@
     <header>
       <div>
         <div class="pill">Tapwork</div>
-        <h1>Escáner de asistencia</h1>
+        <h1>Escáner de Códigos de Barras</h1>
         <p id="status">Cámara lista</p>
       </div>
       <div class="controls">
@@ -100,11 +100,11 @@
         <textarea id="notes" rows="4" placeholder="Opcional"></textarea>
         <label>API base</label>
         <input id="apiBase" value="http://localhost:8000" />
-        <div class="log" id="log">Esperando código...</div>
+        <div class="log" id="log">Esperando código de barras...</div>
       </div>
     </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
   <script>
     const video = document.getElementById("preview");
     const logBox = document.getElementById("log");
@@ -112,24 +112,63 @@
     const apiBase = document.getElementById("apiBase");
     const actionSelect = document.getElementById("action");
     const notes = document.getElementById("notes");
-    let stream, rafId;
+    let isScanning = false;
+    let lastScannedCode = null;
+    let lastScanTime = 0;
 
     async function startCamera() {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        video.srcObject = stream;
-        statusBox.textContent = "Escaneando...";
-        tick();
-      } catch (err) {
-        statusBox.textContent = "No se pudo acceder a la cámara";
-        console.error(err);
-      }
+      if (isScanning) return;
+
+      statusBox.textContent = "Inicializando escáner de códigos de barras...";
+
+      Quagga.init({
+        inputStream: {
+          name: "Live",
+          type: "LiveStream",
+          target: video,
+          constraints: {
+            facingMode: "environment"
+          }
+        },
+        decoder: {
+          readers: ["code_128_reader"]
+        },
+        locate: true
+      }, function(err) {
+        if (err) {
+          statusBox.textContent = "Error al acceder a la cámara";
+          console.error(err);
+          return;
+        }
+        Quagga.start();
+        isScanning = true;
+        statusBox.textContent = "Escaneando códigos de barras Code128...";
+      });
+
+      Quagga.onDetected(function(result) {
+        const code = result.codeResult.code;
+        const now = Date.now();
+
+        // Prevenir escaneos duplicados (debounce de 2 segundos)
+        if (code === lastScannedCode && (now - lastScanTime) < 2000) {
+          return;
+        }
+
+        lastScannedCode = code;
+        lastScanTime = now;
+
+        statusBox.textContent = `Código detectado: ${code}`;
+        sendScan(code);
+      });
     }
 
     function stopCamera() {
-      if (rafId) cancelAnimationFrame(rafId);
-      if (stream) stream.getTracks().forEach(t => t.stop());
+      if (!isScanning) return;
+
+      Quagga.stop();
+      isScanning = false;
       statusBox.textContent = "Cámara detenida";
+      lastScannedCode = null;
     }
 
     async function sendScan(data) {
@@ -138,30 +177,26 @@
         action: actionSelect.value,
         notes: notes.value || undefined
       };
-      const res = await fetch(`${apiBase.value}/api/attendance/scan`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-      const json = await res.json();
-      logBox.textContent = res.ok ? `OK: ${JSON.stringify(json)}` : `Error: ${json.detail || res.status}`;
-    }
 
-    function tick() {
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(imageData.data, canvas.width, canvas.height);
-        if (code) {
-          statusBox.textContent = "Código detectado";
-          sendScan(code.data);
+      try {
+        const res = await fetch(`${apiBase.value}/api/attendance/scan`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+        const json = await res.json();
+
+        if (res.ok) {
+          logBox.textContent = `✓ ${actionSelect.value === 'check_in' ? 'Entrada' : 'Salida'} registrada: ${data}\nEstado: ${json.status || 'OK'}`;
+          logBox.style.color = '#10b981';
+        } else {
+          logBox.textContent = `✗ Error: ${json.detail || res.status}`;
+          logBox.style.color = '#ef4444';
         }
+      } catch (err) {
+        logBox.textContent = `✗ Error de conexión: ${err.message}`;
+        logBox.style.color = '#ef4444';
       }
-      rafId = requestAnimationFrame(tick);
     }
 
     document.getElementById("start").onclick = startCamera;

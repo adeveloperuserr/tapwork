@@ -1,6 +1,6 @@
 import csv
 import io
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Iterable
 
 from fpdf import FPDF
@@ -24,7 +24,7 @@ def attendance_to_pdf(records: Iterable[dict], title: str = "Attendance Report")
     pdf.set_font("Arial", "B", 16)
     pdf.cell(0, 10, title, ln=1)
     pdf.set_font("Arial", size=10)
-    pdf.cell(0, 10, f"Generado: {datetime.utcnow().isoformat()} UTC", ln=1)
+    pdf.cell(0, 10, f"Generado: {datetime.now(timezone.utc).isoformat()} UTC", ln=1)
 
     pdf.set_font("Arial", "B", 10)
     headers = ["Email", "Check-in", "Check-out", "Status", "Location", "Notes"]
