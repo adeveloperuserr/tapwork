@@ -64,7 +64,7 @@ Railway ofrece un tier gratuito generoso y es muy fácil de configurar.
    - Una vez desplegado, ve a "Settings" → "Deploy"
    - Ejecuta el comando de seed:
    ```bash
-   python scripts/seed.py
+   python -m scripts.seed
    ```
 
 7. **¡Listo!** Tu API estará disponible en `https://tu-app.up.railway.app`
@@ -100,7 +100,7 @@ Render también ofrece un tier gratuito para aplicaciones web y bases de datos.
 5. **Ejecutar seed**:
    - Conecta por SSH o usa el shell de Render:
    ```bash
-   python scripts/seed.py
+   python -m scripts.seed
    ```
 
 ---
@@ -160,7 +160,7 @@ Fly.io es ideal para aplicaciones Docker.
 8. **Ejecutar seed**:
    ```bash
    flyctl ssh console
-   python scripts/seed.py
+   python -m scripts.seed
    ```
 
 ---
