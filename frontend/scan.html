@@ -3,123 +3,362 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Escáner de Códigos de Barras - Tapwork</title>
+  <title>Terminal de Asistencia - Tapwork</title>
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
+      --primary: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
       --bg: #0f172a;
-      --card: #111827;
-      --accent: #22d3ee;
-      --text: #e2e8f0;
-      --muted: #94a3b8;
+      --surface: #1e293b;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
     }
     body {
-      margin: 0;
       min-height: 100vh;
-      font-family: "Inter", system-ui, -apple-system, sans-serif;
-      background: radial-gradient(circle at 20% 20%, #1e293b, #0b1224 60%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
       color: var(--text);
-      display: grid;
-      place-items: center;
-      padding: 24px;
-    }
-    .card {
-      width: min(960px, 100%);
-      background: var(--card);
-      border: 1px solid #1f2937;
-      border-radius: 18px;
-      padding: 24px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-    }
-    header {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
+      justify-content: center;
+      padding: 20px;
     }
-    h1 { margin: 0; letter-spacing: -0.02em; }
-    .controls { display: flex; gap: 8px; flex-wrap: wrap; }
-    button, select {
-      background: #0ea5e9;
-      color: #0b1224;
-      border: none;
-      padding: 10px 14px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    select { background: #1f2937; color: var(--text); border: 1px solid #2f3645; }
-    #status { margin-top: 8px; color: var(--muted); }
-    #preview { width: 100%; max-height: 360px; border-radius: 14px; background: #0b1224; object-fit: cover; }
-    .row { display: grid; grid-template-columns: 1fr 320px; gap: 16px; }
-    @media (max-width: 900px) { .row { grid-template-columns: 1fr; } }
-    textarea, input {
+
+    .terminal {
       width: 100%;
-      background: #0b1224;
-      border: 1px solid #1f2937;
-      border-radius: 10px;
-      color: var(--text);
-      padding: 10px;
-      resize: vertical;
+      max-width: 800px;
+      background: var(--surface);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     }
-    .log {
-      background: #0b1224;
+
+    .header {
+      background: linear-gradient(135deg, var(--primary) 0%, #059669 100%);
+      padding: 30px;
+      text-align: center;
+      position: relative;
+    }
+
+    .header.check-out-mode {
+      background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+    }
+
+    .logo {
+      font-size: 14px;
+      font-weight: 600;
+      opacity: 0.9;
+      margin-bottom: 10px;
+      letter-spacing: 2px;
+    }
+
+    .title {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      opacity: 0.9;
+    }
+
+    .scanner-container {
+      position: relative;
+      background: #000;
+      aspect-ratio: 4/3;
+      overflow: hidden;
+    }
+
+    #preview {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .scan-guide {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80%;
+      max-width: 400px;
+      height: 150px;
+      border: 3px solid var(--primary);
       border-radius: 12px;
-      padding: 12px;
-      min-height: 120px;
-      font-family: "Fira Code", monospace;
-      color: #cbd5e1;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+      animation: pulse 2s ease-in-out infinite;
     }
-    .pill { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 999px; background: #1f2937; font-size: 12px; color: var(--muted); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.8; }
+      50% { opacity: 1; border-color: #34d399; }
+    }
+
+    .scan-guide::before {
+      content: "📱 Coloca tu código de barras aquí";
+      position: absolute;
+      top: -40px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--primary);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .status-bar {
+      background: var(--bg);
+      padding: 20px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .status-text {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      animation: blink 1.5s infinite;
+    }
+
+    .status-indicator.active {
+      background: var(--primary);
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #059669;
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .toggle-mode {
+      background: var(--surface);
+      border: 2px solid var(--primary);
+      color: var(--text);
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .toggle-mode:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    .result-area {
+      padding: 30px;
+    }
+
+    .result-box {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 20px;
+      min-height: 100px;
+      font-family: "Courier New", monospace;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .result-box.success {
+      border-left: 4px solid var(--primary);
+      color: var(--primary);
+    }
+
+    .result-box.error {
+      border-left: 4px solid var(--danger);
+      color: var(--danger);
+    }
+
+    .instructions {
+      background: var(--bg);
+      padding: 25px 30px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .instructions h3 {
+      font-size: 16px;
+      margin-bottom: 15px;
+      color: var(--text-muted);
+    }
+
+    .instructions ol {
+      padding-left: 20px;
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    input[type="text"] {
+      background: var(--bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      width: 200px;
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <header>
-      <div>
-        <div class="pill">Tapwork</div>
-        <h1>Escáner de Códigos de Barras</h1>
-        <p id="status">Cámara lista</p>
+  <div class="terminal">
+    <div class="header" id="header">
+      <div class="logo">TAPWORK</div>
+      <div class="title" id="headerTitle">ENTRADA</div>
+      <div class="subtitle" id="headerSubtitle">Escanea tu código de barras</div>
+    </div>
+
+    <div class="scanner-container" id="scannerContainer">
+      <video id="preview" autoplay playsinline muted></video>
+      <canvas id="canvas"></canvas>
+      <div class="scan-guide hidden" id="scanGuide"></div>
+    </div>
+
+    <div class="status-bar">
+      <div class="status-text">
+        <span class="status-indicator" id="statusIndicator"></span>
+        <span id="status">Presiona iniciar para escanear</span>
       </div>
       <div class="controls">
-        <select id="action">
-          <option value="check_in">Check-in</option>
-          <option value="check_out">Check-out</option>
-        </select>
-        <button id="start">Iniciar cámara</button>
-        <button id="stop">Detener</button>
+        <button class="btn btn-primary" id="start">▶ Iniciar</button>
+        <button class="btn btn-danger hidden" id="stop">⏹ Detener</button>
+        <button class="toggle-mode" id="toggleMode">🔄 Cambiar a Salida</button>
       </div>
-    </header>
-    <div class="row">
-      <div>
-        <video id="preview" autoplay playsinline muted></video>
+    </div>
+
+    <div class="result-area">
+      <div class="result-box" id="result">
+        <div style="text-align: center; color: var(--text-muted);">
+          ⏳ Esperando escaneo...
+        </div>
       </div>
-      <div>
-        <label>Notas</label>
-        <textarea id="notes" rows="4" placeholder="Opcional"></textarea>
-        <label>API base</label>
-        <input id="apiBase" value="http://localhost:8000" />
-        <div class="log" id="log">Esperando código de barras...</div>
+    </div>
+
+    <div class="instructions">
+      <h3>📋 INSTRUCCIONES</h3>
+      <ol>
+        <li>Presiona el botón <strong>INICIAR</strong></li>
+        <li>Permite el acceso a la cámara cuando tu navegador lo solicite</li>
+        <li>Coloca tu código de barras dentro del marco verde</li>
+        <li>Mantén el código firme hasta que sea detectado</li>
+        <li>El sistema registrará automáticamente tu entrada o salida</li>
+      </ol>
+      <div style="margin-top: 15px; font-size: 12px;">
+        <label style="color: var(--text-muted);">API: </label>
+        <input type="text" id="apiBase" value="http://localhost:8000" />
       </div>
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
   <script>
+    // Elementos del DOM
     const video = document.getElementById("preview");
-    const logBox = document.getElementById("log");
+    const canvas = document.getElementById("canvas");
     const statusBox = document.getElementById("status");
+    const statusIndicator = document.getElementById("statusIndicator");
+    const resultBox = document.getElementById("result");
     const apiBase = document.getElementById("apiBase");
-    const actionSelect = document.getElementById("action");
-    const notes = document.getElementById("notes");
+    const startBtn = document.getElementById("start");
+    const stopBtn = document.getElementById("stop");
+    const toggleBtn = document.getElementById("toggleMode");
+    const header = document.getElementById("header");
+    const headerTitle = document.getElementById("headerTitle");
+    const headerSubtitle = document.getElementById("headerSubtitle");
+    const scanGuide = document.getElementById("scanGuide");
+
+    // Estado
     let isScanning = false;
     let lastScannedCode = null;
     let lastScanTime = 0;
+    let currentMode = "check_in"; // check_in o check_out
+
+    // Cambiar modo entrada/salida
+    toggleBtn.onclick = () => {
+      if (currentMode === "check_in") {
+        currentMode = "check_out";
+        headerTitle.textContent = "SALIDA";
+        headerSubtitle.textContent = "Registra tu salida";
+        header.classList.add("check-out-mode");
+        toggleBtn.textContent = "🔄 Cambiar a Entrada";
+      } else {
+        currentMode = "check_in";
+        headerTitle.textContent = "ENTRADA";
+        headerSubtitle.textContent = "Escanea tu código de barras";
+        header.classList.remove("check-out-mode");
+        toggleBtn.textContent = "🔄 Cambiar a Salida";
+      }
+    };
 
     async function startCamera() {
       if (isScanning) return;
 
-      statusBox.textContent = "Inicializando escáner de códigos de barras...";
+      statusBox.textContent = "Inicializando escáner...";
+      startBtn.classList.add("hidden");
 
       Quagga.init({
         inputStream: {
@@ -127,37 +366,80 @@
           type: "LiveStream",
           target: video,
           constraints: {
-            facingMode: "environment"
+            facingMode: "environment",
+            aspectRatio: 4/3
           }
         },
         decoder: {
-          readers: ["code_128_reader"]
+          readers: ["code_128_reader"],
+          debug: {
+            drawBoundingBox: true,
+            showFrequency: true,
+            drawScanline: true,
+            showPattern: true
+          }
         },
-        locate: true
+        locate: true,
+        locator: {
+          halfSample: true,
+          patchSize: "medium"
+        }
       }, function(err) {
         if (err) {
-          statusBox.textContent = "Error al acceder a la cámara";
+          statusBox.textContent = "❌ Error: No se pudo acceder a la cámara";
+          resultBox.innerHTML = `<div style="color: var(--danger);">Error al iniciar cámara: ${err.message}</div>`;
+          resultBox.className = "result-box error";
+          startBtn.classList.remove("hidden");
           console.error(err);
           return;
         }
+
         Quagga.start();
         isScanning = true;
-        statusBox.textContent = "Escaneando códigos de barras Code128...";
+        statusBox.textContent = "🟢 Escaneando... Coloca tu código en el marco";
+        statusIndicator.classList.add("active");
+        stopBtn.classList.remove("hidden");
+        scanGuide.classList.remove("hidden");
       });
 
+      // Dibujar área de detección en canvas
+      Quagga.onProcessed(function(result) {
+        const ctx = canvas.getContext("2d");
+        const drawingCtx = Quagga.canvas.ctx.overlay;
+        const drawingCanvas = Quagga.canvas.dom.overlay;
+
+        if (result) {
+          if (result.boxes) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            result.boxes.filter(box => box !== result.box).forEach(box => {
+              Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, drawingCtx, {color: "rgba(0, 255, 0, 0.3)", lineWidth: 2});
+            });
+          }
+
+          if (result.box) {
+            Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, drawingCtx, {color: "#00FF00", lineWidth: 3});
+          }
+
+          if (result.codeResult && result.codeResult.code) {
+            Quagga.ImageDebug.drawPath(result.line, {x: 'x', y: 'y'}, drawingCtx, {color: 'red', lineWidth: 3});
+          }
+        }
+      });
+
+      // Detección de código
       Quagga.onDetected(function(result) {
         const code = result.codeResult.code;
         const now = Date.now();
 
-        // Prevenir escaneos duplicados (debounce de 2 segundos)
-        if (code === lastScannedCode && (now - lastScanTime) < 2000) {
+        // Debounce: prevenir escaneos duplicados
+        if (code === lastScannedCode && (now - lastScanTime) < 3000) {
           return;
         }
 
         lastScannedCode = code;
         lastScanTime = now;
 
-        statusBox.textContent = `Código detectado: ${code}`;
+        statusBox.textContent = `✓ Código detectado: ${code}`;
         sendScan(code);
       });
     }
@@ -167,16 +449,22 @@
 
       Quagga.stop();
       isScanning = false;
-      statusBox.textContent = "Cámara detenida";
+      statusBox.textContent = "⏸ Cámara detenida";
+      statusIndicator.classList.remove("active");
+      stopBtn.classList.add("hidden");
+      startBtn.classList.remove("hidden");
+      scanGuide.classList.add("hidden");
       lastScannedCode = null;
     }
 
-    async function sendScan(data) {
+    async function sendScan(code) {
       const body = {
-        code_data: data,
-        action: actionSelect.value,
-        notes: notes.value || undefined
+        code_data: code,
+        action: currentMode
       };
+
+      resultBox.innerHTML = `<div style="text-align: center; color: var(--warning);">⌛ Procesando ${code}...</div>`;
+      resultBox.className = "result-box";
 
       try {
         const res = await fetch(`${apiBase.value}/api/attendance/scan`, {
@@ -187,20 +475,79 @@
         const json = await res.json();
 
         if (res.ok) {
-          logBox.textContent = `✓ ${actionSelect.value === 'check_in' ? 'Entrada' : 'Salida'} registrada: ${data}\nEstado: ${json.status || 'OK'}`;
-          logBox.style.color = '#10b981';
+          const actionText = currentMode === 'check_in' ? 'ENTRADA' : 'SALIDA';
+          const time = new Date().toLocaleTimeString('es-ES');
+
+          resultBox.innerHTML = `
+            <div style="font-size: 18px; margin-bottom: 10px;">✅ ${actionText} REGISTRADA</div>
+            <div>━━━━━━━━━━━━━━━━━━━━━━</div>
+            <div style="margin: 10px 0;">
+              <strong>Empleado:</strong> ${code}<br>
+              <strong>Hora:</strong> ${time}<br>
+              <strong>Estado:</strong> ${json.status || 'OK'}
+            </div>
+            <div>━━━━━━━━━━━━━━━━━━━━━━</div>
+            <div style="margin-top: 10px; font-size: 12px; opacity: 0.7;">
+              ${currentMode === 'check_in' ? '¡Buen día de trabajo!' : '¡Hasta mañana!'}
+            </div>
+          `;
+          resultBox.className = "result-box success";
+
+          // Reproducir sonido de éxito (beep)
+          playBeep(true);
         } else {
-          logBox.textContent = `✗ Error: ${json.detail || res.status}`;
-          logBox.style.color = '#ef4444';
+          resultBox.innerHTML = `
+            <div style="font-size: 18px; margin-bottom: 10px;">❌ ERROR</div>
+            <div>━━━━━━━━━━━━━━━━━━━━━━</div>
+            <div style="margin: 10px 0;">
+              ${json.detail || 'Error desconocido'}<br>
+              <strong>Código:</strong> ${code}
+            </div>
+            <div>━━━━━━━━━━━━━━━━━━━━━━</div>
+          `;
+          resultBox.className = "result-box error";
+          playBeep(false);
         }
       } catch (err) {
-        logBox.textContent = `✗ Error de conexión: ${err.message}`;
-        logBox.style.color = '#ef4444';
+        resultBox.innerHTML = `
+          <div style="font-size: 18px; margin-bottom: 10px;">⚠️ ERROR DE CONEXIÓN</div>
+          <div>━━━━━━━━━━━━━━━━━━━━━━</div>
+          <div style="margin: 10px 0;">
+            No se pudo conectar con el servidor<br>
+            <small>${err.message}</small>
+          </div>
+          <div>━━━━━━━━━━━━━━━━━━━━━━</div>
+          <div style="margin-top: 10px; font-size: 12px;">
+            Verifica que la API esté corriendo en:<br>
+            <strong>${apiBase.value}</strong>
+          </div>
+        `;
+        resultBox.className = "result-box error";
+        playBeep(false);
       }
     }
 
-    document.getElementById("start").onclick = startCamera;
-    document.getElementById("stop").onclick = stopCamera;
+    // Sonido de beep
+    function playBeep(success) {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.frequency.value = success ? 800 : 400;
+      oscillator.type = 'sine';
+
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.2);
+    }
+
+    startBtn.onclick = startCamera;
+    stopBtn.onclick = stopCamera;
   </script>
 </body>
 </html>
