@@ -117,7 +117,7 @@ copy .env.example .env
 docker compose up --build
 
 # 4. Crear admin (en otra terminal)
-docker compose exec api python scripts/seed.py
+docker compose exec api python -m scripts.seed
 ```
 
 Tu usuario admin será creado con: **adeveloper.user@gmail.com**

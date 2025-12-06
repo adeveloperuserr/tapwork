@@ -31,7 +31,7 @@ docker compose up --build
 
 Seed default roles and an admin user:
 ```bash
-docker compose exec api python scripts/seed.py
+docker compose exec api python -m scripts.seed
 ```
 
 ## Key endpoints

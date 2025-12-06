@@ -50,7 +50,7 @@ tapwork-api-1     | INFO:     Uvicorn running on http://0.0.0.0:8000
 
 **En otra terminal**, ejecuta:
 ```bash
-docker compose exec api python scripts/seed.py
+docker compose exec api python -m scripts.seed
 ```
 
 **Credenciales creadas:**
