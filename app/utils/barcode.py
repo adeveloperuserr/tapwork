@@ -1,6 +1,6 @@
 import io
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import qrcode
 
@@ -20,5 +20,5 @@ def generate_qr_png(data: str) -> bytes:
 
 
 def default_expiration(days: int = 365) -> datetime:
-    return datetime.utcnow() + timedelta(days=days)
+    return datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=days)
 
