@@ -11,7 +11,7 @@ services:
       - SECRET_KEY=change-this-secret
       - SMTP_HOST=mailhog
       - SMTP_PORT=1025
-      - MAIL_FROM=noreply@tapwork.local
+      - MAIL_FROM=noreply@example.com
       - FRONTEND_BASE_URL=http://localhost:3000
     ports:
       - "8000:8000"
