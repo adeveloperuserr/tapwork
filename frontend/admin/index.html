@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Tapwork Admin</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">TAPWORK</div>
+        <h2>Admin Panel</h2>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="index.html" class="nav-item active">
+          <span class="icon">📊</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="users.html" class="nav-item">
+          <span class="icon">👥</span>
+          <span>Usuarios</span>
+        </a>
+        <a href="../scan.html" class="nav-item" target="_blank">
+          <span class="icon">📷</span>
+          <span>Terminal de Asistencia</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="userAvatar">A</div>
+          <div class="user-details">
+            <div class="user-name" id="userName">Cargando...</div>
+            <div class="user-role">Administrador</div>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-block btn-sm" id="logoutBtn">
+          Cerrar Sesión
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <header class="top-bar">
+        <h1 class="page-title">Dashboard</h1>
+        <div id="currentDate"></div>
+      </header>
+
+      <main class="content">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Total Usuarios</span>
+              <div class="stat-icon primary">
+                <span>👥</span>
+              </div>
+            </div>
+            <div class="stat-value" id="totalUsers">0</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Usuarios Activos</span>
+              <div class="stat-icon primary">
+                <span>✓</span>
+              </div>
+            </div>
+            <div class="stat-value" id="activeUsers">0</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Departamentos</span>
+              <div class="stat-icon warning">
+                <span>🏢</span>
+              </div>
+            </div>
+            <div class="stat-value" id="totalDepartments">0</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Turnos</span>
+              <div class="stat-icon danger">
+                <span>⏰</span>
+              </div>
+            </div>
+            <div class="stat-value" id="totalShifts">0</div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Acciones Rápidas</h2>
+          </div>
+          <div class="card-body" style="padding: 24px;">
+            <div class="flex gap-2">
+              <a href="users.html?action=new" class="btn btn-primary">
+                + Nuevo Usuario
+              </a>
+              <a href="../scan.html" target="_blank" class="btn btn-secondary">
+                Abrir Terminal de Asistencia
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Users -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <h2 class="card-title">Usuarios Recientes</h2>
+            <a href="users.html" class="btn btn-secondary btn-sm">Ver Todos</a>
+          </div>
+          <div class="card-body">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID Empleado</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Departamento</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="recentUsersTable">
+                  <tr>
+                    <td colspan="5" class="text-center">Cargando...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script type="module">
+    const API_BASE = 'http://localhost:8000';
+
+    // Check authentication
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      window.location.href = 'login.html';
+    }
+
+    // Auth header
+    const authHeaders = {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+
+    // Load user info
+    async function loadUserInfo() {
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/me`, {
+          headers: authHeaders
+        });
+        const user = await res.json();
+
+        if (!res.ok || !user.role || user.role.name !== 'Admin') {
+          throw new Error('No autorizado');
+        }
+
+        const userName = document.getElementById('userName');
+        const userAvatar = document.getElementById('userAvatar');
+
+        userName.textContent = `${user.first_name} ${user.last_name}`;
+        userAvatar.textContent = user.first_name.charAt(0).toUpperCase();
+      } catch (error) {
+        localStorage.removeItem('access_token');
+        window.location.href = 'login.html';
+      }
+    }
+
+    // Load stats
+    async function loadStats() {
+      try {
+        const [usersRes, deptsRes, shiftsRes] = await Promise.all([
+          fetch(`${API_BASE}/api/admin/users`, { headers: authHeaders }),
+          fetch(`${API_BASE}/api/admin/departments`, { headers: authHeaders }),
+          fetch(`${API_BASE}/api/admin/shifts`, { headers: authHeaders })
+        ]);
+
+        const users = await usersRes.json();
+        const departments = await deptsRes.json();
+        const shifts = await shiftsRes.json();
+
+        // Update stats
+        document.getElementById('totalUsers').textContent = users.length;
+        document.getElementById('activeUsers').textContent = users.filter(u => u.is_active).length;
+        document.getElementById('totalDepartments').textContent = departments.length;
+        document.getElementById('totalShifts').textContent = shifts.length;
+
+        // Load recent users (first 5)
+        loadRecentUsers(users.slice(0, 5));
+      } catch (error) {
+        console.error('Error loading stats:', error);
+      }
+    }
+
+    // Load recent users table
+    function loadRecentUsers(users) {
+      const tbody = document.getElementById('recentUsersTable');
+
+      if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay usuarios</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = users.map(user => `
+        <tr>
+          <td><strong>${user.employee_id}</strong></td>
+          <td>${user.first_name} ${user.last_name}</td>
+          <td>${user.email}</td>
+          <td>${user.department ? user.department.name : '-'}</td>
+          <td>
+            <span class="badge ${user.is_active ? 'badge-success' : 'badge-danger'}">
+              ${user.is_active ? 'Activo' : 'Inactivo'}
+            </span>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Current date
+    function updateDate() {
+      const dateEl = document.getElementById('currentDate');
+      const now = new Date();
+      const options = {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      };
+      dateEl.textContent = now.toLocaleDateString('es-ES', options);
+    }
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user');
+      window.location.href = 'login.html';
+    });
+
+    // Initialize
+    loadUserInfo();
+    loadStats();
+    updateDate();
+  </script>
+</body>
+</html>
