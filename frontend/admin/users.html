@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Usuarios - Tapwork Admin</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">TAPWORK</div>
+        <h2>Admin Panel</h2>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="index.html" class="nav-item">
+          <span class="icon">📊</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="users.html" class="nav-item active">
+          <span class="icon">👥</span>
+          <span>Usuarios</span>
+        </a>
+        <a href="../scan.html" class="nav-item" target="_blank">
+          <span class="icon">📷</span>
+          <span>Terminal de Asistencia</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="userAvatar">A</div>
+          <div class="user-details">
+            <div class="user-name" id="userName">Cargando...</div>
+            <div class="user-role">Administrador</div>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-block btn-sm" id="logoutBtn">
+          Cerrar Sesión
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <header class="top-bar">
+        <h1 class="page-title">Gestión de Usuarios</h1>
+        <button class="btn btn-primary" id="newUserBtn">+ Nuevo Usuario</button>
+      </header>
+
+      <main class="content">
+        <!-- Search and Filters -->
+        <div class="card mb-3">
+          <div class="card-body" style="padding: 20px;">
+            <div class="flex items-center gap-2">
+              <input
+                type="text"
+                id="searchInput"
+                placeholder="Buscar por nombre, email o ID de empleado..."
+                style="flex: 1; padding: 10px 16px; border: 1px solid var(--border); border-radius: var(--radius-sm);"
+              >
+              <select id="statusFilter" style="padding: 10px 16px; border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                <option value="">Todos los estados</option>
+                <option value="active">Activos</option>
+                <option value="inactive">Inactivos</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Todos los Usuarios (<span id="userCount">0</span>)</h2>
+          </div>
+          <div class="card-body">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID Empleado</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Departamento</th>
+                    <th>Turno</th>
+                    <th>Código</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTable">
+                  <tr>
+                    <td colspan="9" class="text-center">Cargando...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal: Create/Edit User -->
+  <div id="userModal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Nuevo Usuario</h2>
+        <button class="modal-close" id="closeModal">&times;</button>
+      </div>
+      <form id="userForm">
+        <div class="modal-body">
+          <input type="hidden" id="userId">
+
+          <div class="form-group">
+            <label for="firstName">Nombre *</label>
+            <input type="text" id="firstName" name="first_name" required>
+          </div>
+
+          <div class="form-group">
+            <label for="lastName">Apellido *</label>
+            <input type="text" id="lastName" name="last_name" required>
+          </div>
+
+          <div class="form-group">
+            <label for="employeeId">ID de Empleado *</label>
+            <input type="text" id="employeeId" name="employee_id" required placeholder="EMP-001">
+          </div>
+
+          <div class="form-group">
+            <label for="email">Correo Electrónico *</label>
+            <input type="email" id="email" name="email" required>
+          </div>
+
+          <div class="form-group" id="passwordGroup">
+            <label for="password">Contraseña *</label>
+            <input type="password" id="password" name="password" minlength="8">
+            <small style="color: var(--text-muted); font-size: 12px;">Mínimo 8 caracteres. Dejar en blanco para mantener actual al editar.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="roleId">Rol</label>
+            <select id="roleId" name="role_id">
+              <option value="">Seleccionar rol...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="departmentId">Departamento</label>
+            <select id="departmentId" name="department_id">
+              <option value="">Seleccionar departamento...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="shiftId">Turno</label>
+            <select id="shiftId" name="shift_id">
+              <option value="">Seleccionar turno...</option>
+            </select>
+          </div>
+
+          <div id="formError" class="alert alert-error hidden"></div>
+          <div id="formSuccess" class="alert alert-success hidden"></div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="saveBtn">
+            <span class="btn-text">Guardar Usuario</span>
+            <span class="btn-loader hidden"><span class="spinner"></span> Guardando...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: View Barcode -->
+  <div id="barcodeModal" class="modal-overlay hidden">
+    <div class="modal" style="max-width: 400px;">
+      <div class="modal-header">
+        <h2 class="modal-title">Código de Barras</h2>
+        <button class="modal-close" id="closeBarcodeModal">&times;</button>
+      </div>
+      <div class="modal-body text-center">
+        <div id="barcodeContainer"></div>
+        <p id="barcodeCode" style="margin-top: 16px; font-size: 20px; font-weight: 600;"></p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/users.js"></script>
+</body>
+</html>
