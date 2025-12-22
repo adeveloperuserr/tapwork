@@ -73,18 +73,14 @@
       overflow: hidden;
     }
 
-    #preview {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    #canvas {
+    .scanner-container video,
+    .scanner-container canvas {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
+      object-fit: cover;
     }
 
     .scan-guide {
@@ -274,8 +270,6 @@
     </div>
 
     <div class="scanner-container" id="scannerContainer">
-      <video id="preview" autoplay playsinline muted></video>
-      <canvas id="canvas"></canvas>
       <div class="scan-guide hidden" id="scanGuide"></div>
     </div>
 
@@ -317,8 +311,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
   <script>
     // Elementos del DOM
-    const video = document.getElementById("preview");
-    const canvas = document.getElementById("canvas");
+    const scannerContainer = document.getElementById("scannerContainer");
     const statusBox = document.getElementById("status");
     const statusIndicator = document.getElementById("statusIndicator");
     const resultBox = document.getElementById("result");
@@ -364,10 +357,11 @@
         inputStream: {
           name: "Live",
           type: "LiveStream",
-          target: video,
+          target: scannerContainer,
           constraints: {
-            facingMode: "environment",
-            aspectRatio: 4/3
+            width: { min: 640, ideal: 1280, max: 1920 },
+            height: { min: 480, ideal: 720, max: 1080 },
+            facingMode: "environment"
           }
         },
         decoder: {
@@ -400,30 +394,6 @@
         statusIndicator.classList.add("active");
         stopBtn.classList.remove("hidden");
         scanGuide.classList.remove("hidden");
-      });
-
-      // Dibujar área de detección en canvas
-      Quagga.onProcessed(function(result) {
-        const ctx = canvas.getContext("2d");
-        const drawingCtx = Quagga.canvas.ctx.overlay;
-        const drawingCanvas = Quagga.canvas.dom.overlay;
-
-        if (result) {
-          if (result.boxes) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            result.boxes.filter(box => box !== result.box).forEach(box => {
-              Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, drawingCtx, {color: "rgba(0, 255, 0, 0.3)", lineWidth: 2});
-            });
-          }
-
-          if (result.box) {
-            Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, drawingCtx, {color: "#00FF00", lineWidth: 3});
-          }
-
-          if (result.codeResult && result.codeResult.code) {
-            Quagga.ImageDebug.drawPath(result.line, {x: 'x', y: 'y'}, drawingCtx, {color: 'red', lineWidth: 3});
-          }
-        }
       });
 
       // Detección de código
