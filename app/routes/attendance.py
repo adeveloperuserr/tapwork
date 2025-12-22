@@ -40,7 +40,26 @@ async def scan_attendance(payload: schemas.AttendanceCreate, db: AsyncSession = 
     if not user or not user.is_active:
         raise HTTPException(status_code=403, detail="Usuario inactivo")
 
-    if payload.action == "check_in":
+    # LÓGICA AUTOMÁTICA: Detectar si es entrada o salida
+    # Buscar si hay un check-in abierto (sin check-out)
+    last_result = await db.execute(
+        select(AttendanceRecord)
+        .where(and_(AttendanceRecord.user_id == user.id, AttendanceRecord.check_out.is_(None)))
+        .order_by(AttendanceRecord.check_in.desc())
+        .limit(1)  # IMPORTANTE: Solo obtener el último registro
+    )
+    open_record = last_result.scalar_one_or_none()
+
+    if open_record:
+        # Ya hay un check-in abierto → registrar SALIDA
+        open_record.check_out = now
+        open_record.notes = payload.notes or open_record.notes
+        await db.commit()
+        await db.refresh(open_record)
+        record = open_record
+        action_performed = "check_out"
+    else:
+        # No hay check-in abierto → registrar ENTRADA
         status = await _status_for_check_in(user, now)
         record = AttendanceRecord(
             user_id=user.id,
@@ -53,19 +72,7 @@ async def scan_attendance(payload: schemas.AttendanceCreate, db: AsyncSession = 
         db.add(record)
         await db.commit()
         await db.refresh(record)
-    else:
-        last_result = await db.execute(
-            select(AttendanceRecord)
-            .where(and_(AttendanceRecord.user_id == user.id, AttendanceRecord.check_out.is_(None)))
-            .order_by(AttendanceRecord.check_in.desc())
-        )
-        record = last_result.scalar_one_or_none()
-        if not record:
-            raise HTTPException(status_code=400, detail="No hay check-in abierto")
-        record.check_out = now
-        record.notes = payload.notes or record.notes
-        await db.commit()
-        await db.refresh(record)
+        action_performed = "check_in"
 
     if user.notification_preferences.get("attendance", True):
         subject, recipient, html = build_attendance_alert(user.email, record.status, payload.notes)
