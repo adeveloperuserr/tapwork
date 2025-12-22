@@ -43,10 +43,6 @@
       position: relative;
     }
 
-    .header.check-out-mode {
-      background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
-    }
-
     .logo {
       font-size: 14px;
       font-weight: 600;
@@ -185,22 +181,6 @@
 
     .btn-danger:hover {
       background: #dc2626;
-    }
-
-    .toggle-mode {
-      background: var(--surface);
-      border: 2px solid var(--primary);
-      color: var(--text);
-      padding: 10px 20px;
-      border-radius: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .toggle-mode:hover {
-      background: var(--primary);
-      color: white;
     }
 
     /* Toast Notification */
@@ -344,8 +324,8 @@
   <div class="terminal">
     <div class="header" id="header">
       <div class="logo">TAPWORK</div>
-      <div class="title" id="headerTitle">ENTRADA</div>
-      <div class="subtitle" id="headerSubtitle">Escanea tu código de barras</div>
+      <div class="title" id="headerTitle">TERMINAL DE ASISTENCIA</div>
+      <div class="subtitle" id="headerSubtitle">Escanea tu código de barras para registrar entrada o salida</div>
     </div>
 
     <div class="scanner-container" id="scannerContainer">
@@ -360,7 +340,6 @@
       <div class="controls">
         <button class="btn btn-primary" id="start">INICIAR</button>
         <button class="btn btn-danger hidden" id="stop">DETENER</button>
-        <button class="toggle-mode" id="toggleMode">Cambiar a Salida</button>
       </div>
     </div>
 
@@ -384,8 +363,9 @@
         <li>Permite el acceso a la cámara cuando tu navegador lo solicite</li>
         <li>Coloca tu código de barras dentro del marco verde</li>
         <li>Mantén el código firme hasta que sea detectado</li>
-        <li>El sistema registrará automáticamente tu entrada o salida</li>
-        <li>La cámara permanece activa para escaneos continuos</li>
+        <li>El sistema detecta automáticamente si debes marcar <strong>ENTRADA</strong> o <strong>SALIDA</strong></li>
+        <li>Primera vez del día = Entrada, segunda vez = Salida, tercera vez = Entrada nuevamente</li>
+        <li>La cámara permanece activa para escaneos continuos de múltiples empleados</li>
       </ol>
       <div style="margin-top: 15px; font-size: 12px;">
         <label style="color: var(--text-muted);">API: </label>
@@ -402,11 +382,6 @@
     const apiBase = document.getElementById("apiBase");
     const startBtn = document.getElementById("start");
     const stopBtn = document.getElementById("stop");
-    const toggleBtn = document.getElementById("toggleMode");
-    const header = document.getElementById("header");
-    const headerTitle = document.getElementById("headerTitle");
-    const headerSubtitle = document.getElementById("headerSubtitle");
-    const scanGuide = document.getElementById("scanGuide");
     const toast = document.getElementById("toast");
     const toastIcon = document.getElementById("toastIcon");
     const toastTitle = document.getElementById("toastTitle");
@@ -418,25 +393,7 @@
     let isScanning = false;
     let lastScannedCode = null;
     let lastScanTime = 0;
-    let currentMode = "check_in"; // check_in o check_out
     let totalScans = 0;
-
-    // Cambiar modo entrada/salida
-    toggleBtn.onclick = () => {
-      if (currentMode === "check_in") {
-        currentMode = "check_out";
-        headerTitle.textContent = "SALIDA";
-        headerSubtitle.textContent = "Registra tu salida";
-        header.classList.add("check-out-mode");
-        toggleBtn.textContent = "Cambiar a Entrada";
-      } else {
-        currentMode = "check_in";
-        headerTitle.textContent = "ENTRADA";
-        headerSubtitle.textContent = "Escanea tu código de barras";
-        header.classList.remove("check-out-mode");
-        toggleBtn.textContent = "Cambiar a Salida";
-      }
-    };
 
     // Mostrar notificación toast
     function showToast(success, title, body) {
@@ -533,9 +490,10 @@
     }
 
     async function sendScan(code) {
+      // El backend detecta automáticamente si es entrada o salida
       const body = {
         code_data: code,
-        action: currentMode
+        action: "check_in"  // El backend ignora esto y detecta automáticamente
       };
 
       try {
@@ -547,22 +505,25 @@
         const json = await res.json();
 
         if (res.ok) {
-          const actionText = currentMode === 'check_in' ? 'ENTRADA' : 'SALIDA';
+          // Detectar si fue entrada o salida basado en la respuesta
+          const isCheckOut = json.check_out !== null && json.check_out !== undefined;
+          const actionText = isCheckOut ? 'SALIDA' : 'ENTRADA';
           const time = new Date().toLocaleTimeString('es-ES');
 
           totalScans++;
           scanCount.textContent = totalScans;
-          lastScanInfo.textContent = `${code} - ${time}`;
+          lastScanInfo.textContent = `${code} - ${actionText} - ${time}`;
 
           const employeeName = json.employee_name || code;
           const toastMessage = `
             <strong>Empleado:</strong> ${employeeName}<br>
+            <strong>Acción:</strong> ${actionText}<br>
             <strong>Hora:</strong> ${time}<br>
             <strong>Estado:</strong> ${json.status || 'Registrado correctamente'}
           `;
 
           showToast(true, `${actionText} REGISTRADA`, toastMessage);
-          statusBox.textContent = `Escáner activo - Último: ${code}`;
+          statusBox.textContent = `Escáner activo - Último: ${actionText} de ${code}`;
 
           // Reproducir sonido de éxito (beep)
           playBeep(true);
