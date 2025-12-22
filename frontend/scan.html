@@ -103,7 +103,7 @@
     }
 
     .scan-guide::before {
-      content: "📱 Coloca tu código de barras aquí";
+      content: "Coloca tu código de barras aquí";
       position: absolute;
       top: -40px;
       left: 50%;
@@ -203,28 +203,76 @@
       color: white;
     }
 
-    .result-area {
-      padding: 30px;
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      min-width: 350px;
+      max-width: 500px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      transform: translateX(600px);
+      transition: transform 0.3s ease-out;
+      z-index: 1000;
     }
 
-    .result-box {
-      background: var(--bg);
-      border-radius: 12px;
-      padding: 20px;
-      min-height: 100px;
-      font-family: "Courier New", monospace;
-      font-size: 15px;
+    .toast.show {
+      transform: translateX(0);
+    }
+
+    .toast.success {
+      border-left: 6px solid var(--primary);
+    }
+
+    .toast.error {
+      border-left: 6px solid var(--danger);
+    }
+
+    .toast-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .toast-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .toast.success .toast-icon {
+      background: var(--primary);
+      color: white;
+    }
+
+    .toast.error .toast-icon {
+      background: var(--danger);
+      color: white;
+    }
+
+    .toast-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .toast-body {
+      color: #475569;
+      font-size: 14px;
       line-height: 1.6;
     }
 
-    .result-box.success {
-      border-left: 4px solid var(--primary);
-      color: var(--primary);
-    }
-
-    .result-box.error {
-      border-left: 4px solid var(--danger);
-      color: var(--danger);
+    .toast-body strong {
+      color: #1e293b;
     }
 
     .instructions {
@@ -259,9 +307,40 @@
       font-size: 12px;
       width: 200px;
     }
+
+    /* Last Scan Info */
+    .last-scan {
+      background: var(--bg);
+      padding: 20px 30px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .last-scan-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .last-scan-label {
+      font-weight: 600;
+      color: var(--text);
+    }
   </style>
 </head>
 <body>
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">
+    <div class="toast-header">
+      <div class="toast-icon" id="toastIcon">✓</div>
+      <div class="toast-title" id="toastTitle">ENTRADA REGISTRADA</div>
+    </div>
+    <div class="toast-body" id="toastBody"></div>
+  </div>
+
   <div class="terminal">
     <div class="header" id="header">
       <div class="logo">TAPWORK</div>
@@ -279,28 +358,34 @@
         <span id="status">Presiona iniciar para escanear</span>
       </div>
       <div class="controls">
-        <button class="btn btn-primary" id="start">▶ Iniciar</button>
-        <button class="btn btn-danger hidden" id="stop">⏹ Detener</button>
-        <button class="toggle-mode" id="toggleMode">🔄 Cambiar a Salida</button>
+        <button class="btn btn-primary" id="start">INICIAR</button>
+        <button class="btn btn-danger hidden" id="stop">DETENER</button>
+        <button class="toggle-mode" id="toggleMode">Cambiar a Salida</button>
       </div>
     </div>
 
-    <div class="result-area">
-      <div class="result-box" id="result">
-        <div style="text-align: center; color: var(--text-muted);">
-          ⏳ Esperando escaneo...
+    <div class="last-scan" id="lastScanArea">
+      <div class="last-scan-content">
+        <div>
+          <span class="last-scan-label">Último escaneo:</span>
+          <span id="lastScanInfo">Ninguno</span>
+        </div>
+        <div>
+          <span class="last-scan-label">Total escaneados:</span>
+          <span id="scanCount">0</span>
         </div>
       </div>
     </div>
 
     <div class="instructions">
-      <h3>📋 INSTRUCCIONES</h3>
+      <h3>INSTRUCCIONES</h3>
       <ol>
         <li>Presiona el botón <strong>INICIAR</strong></li>
         <li>Permite el acceso a la cámara cuando tu navegador lo solicite</li>
         <li>Coloca tu código de barras dentro del marco verde</li>
         <li>Mantén el código firme hasta que sea detectado</li>
         <li>El sistema registrará automáticamente tu entrada o salida</li>
+        <li>La cámara permanece activa para escaneos continuos</li>
       </ol>
       <div style="margin-top: 15px; font-size: 12px;">
         <label style="color: var(--text-muted);">API: </label>
@@ -314,7 +399,6 @@
     const scannerContainer = document.getElementById("scannerContainer");
     const statusBox = document.getElementById("status");
     const statusIndicator = document.getElementById("statusIndicator");
-    const resultBox = document.getElementById("result");
     const apiBase = document.getElementById("apiBase");
     const startBtn = document.getElementById("start");
     const stopBtn = document.getElementById("stop");
@@ -323,12 +407,19 @@
     const headerTitle = document.getElementById("headerTitle");
     const headerSubtitle = document.getElementById("headerSubtitle");
     const scanGuide = document.getElementById("scanGuide");
+    const toast = document.getElementById("toast");
+    const toastIcon = document.getElementById("toastIcon");
+    const toastTitle = document.getElementById("toastTitle");
+    const toastBody = document.getElementById("toastBody");
+    const lastScanInfo = document.getElementById("lastScanInfo");
+    const scanCount = document.getElementById("scanCount");
 
     // Estado
     let isScanning = false;
     let lastScannedCode = null;
     let lastScanTime = 0;
     let currentMode = "check_in"; // check_in o check_out
+    let totalScans = 0;
 
     // Cambiar modo entrada/salida
     toggleBtn.onclick = () => {
@@ -337,15 +428,30 @@
         headerTitle.textContent = "SALIDA";
         headerSubtitle.textContent = "Registra tu salida";
         header.classList.add("check-out-mode");
-        toggleBtn.textContent = "🔄 Cambiar a Entrada";
+        toggleBtn.textContent = "Cambiar a Entrada";
       } else {
         currentMode = "check_in";
         headerTitle.textContent = "ENTRADA";
         headerSubtitle.textContent = "Escanea tu código de barras";
         header.classList.remove("check-out-mode");
-        toggleBtn.textContent = "🔄 Cambiar a Salida";
+        toggleBtn.textContent = "Cambiar a Salida";
       }
     };
+
+    // Mostrar notificación toast
+    function showToast(success, title, body) {
+      toast.className = `toast ${success ? 'success' : 'error'}`;
+      toastIcon.textContent = success ? '✓' : '✕';
+      toastTitle.textContent = title;
+      toastBody.innerHTML = body;
+
+      toast.classList.add('show');
+
+      // Auto-ocultar después de 4 segundos
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 4000);
+    }
 
     async function startCamera() {
       if (isScanning) return;
@@ -380,9 +486,8 @@
         }
       }, function(err) {
         if (err) {
-          statusBox.textContent = "❌ Error: No se pudo acceder a la cámara";
-          resultBox.innerHTML = `<div style="color: var(--danger);">Error al iniciar cámara: ${err.message}</div>`;
-          resultBox.className = "result-box error";
+          statusBox.textContent = "Error: No se pudo acceder a la cámara";
+          showToast(false, 'ERROR DE CÁMARA', `No se pudo iniciar la cámara: ${err.message}`);
           startBtn.classList.remove("hidden");
           console.error(err);
           return;
@@ -390,7 +495,7 @@
 
         Quagga.start();
         isScanning = true;
-        statusBox.textContent = "🟢 Escaneando... Coloca tu código en el marco";
+        statusBox.textContent = "Escáner activo - Esperando código...";
         statusIndicator.classList.add("active");
         stopBtn.classList.remove("hidden");
         scanGuide.classList.remove("hidden");
@@ -401,7 +506,7 @@
         const code = result.codeResult.code;
         const now = Date.now();
 
-        // Debounce: prevenir escaneos duplicados
+        // Debounce: prevenir escaneos duplicados del mismo código
         if (code === lastScannedCode && (now - lastScanTime) < 3000) {
           return;
         }
@@ -409,7 +514,7 @@
         lastScannedCode = code;
         lastScanTime = now;
 
-        statusBox.textContent = `✓ Código detectado: ${code}`;
+        statusBox.textContent = `Código detectado: ${code} - Procesando...`;
         sendScan(code);
       });
     }
@@ -419,7 +524,7 @@
 
       Quagga.stop();
       isScanning = false;
-      statusBox.textContent = "⏸ Cámara detenida";
+      statusBox.textContent = "Cámara detenida";
       statusIndicator.classList.remove("active");
       stopBtn.classList.add("hidden");
       startBtn.classList.remove("hidden");
@@ -433,9 +538,6 @@
         action: currentMode
       };
 
-      resultBox.innerHTML = `<div style="text-align: center; color: var(--warning);">⌛ Procesando ${code}...</div>`;
-      resultBox.className = "result-box";
-
       try {
         const res = await fetch(`${apiBase.value}/api/attendance/scan`, {
           method: "POST",
@@ -448,52 +550,47 @@
           const actionText = currentMode === 'check_in' ? 'ENTRADA' : 'SALIDA';
           const time = new Date().toLocaleTimeString('es-ES');
 
-          resultBox.innerHTML = `
-            <div style="font-size: 18px; margin-bottom: 10px;">✅ ${actionText} REGISTRADA</div>
-            <div>━━━━━━━━━━━━━━━━━━━━━━</div>
-            <div style="margin: 10px 0;">
-              <strong>Empleado:</strong> ${code}<br>
-              <strong>Hora:</strong> ${time}<br>
-              <strong>Estado:</strong> ${json.status || 'OK'}
-            </div>
-            <div>━━━━━━━━━━━━━━━━━━━━━━</div>
-            <div style="margin-top: 10px; font-size: 12px; opacity: 0.7;">
-              ${currentMode === 'check_in' ? '¡Buen día de trabajo!' : '¡Hasta mañana!'}
-            </div>
+          totalScans++;
+          scanCount.textContent = totalScans;
+          lastScanInfo.textContent = `${code} - ${time}`;
+
+          const employeeName = json.employee_name || code;
+          const toastMessage = `
+            <strong>Empleado:</strong> ${employeeName}<br>
+            <strong>Hora:</strong> ${time}<br>
+            <strong>Estado:</strong> ${json.status || 'Registrado correctamente'}
           `;
-          resultBox.className = "result-box success";
+
+          showToast(true, `${actionText} REGISTRADA`, toastMessage);
+          statusBox.textContent = `Escáner activo - Último: ${code}`;
 
           // Reproducir sonido de éxito (beep)
           playBeep(true);
+
+          // Resetear el último código después de 3 segundos para permitir re-escaneo
+          setTimeout(() => {
+            lastScannedCode = null;
+          }, 3000);
         } else {
-          resultBox.innerHTML = `
-            <div style="font-size: 18px; margin-bottom: 10px;">❌ ERROR</div>
-            <div>━━━━━━━━━━━━━━━━━━━━━━</div>
-            <div style="margin: 10px 0;">
-              ${json.detail || 'Error desconocido'}<br>
-              <strong>Código:</strong> ${code}
-            </div>
-            <div>━━━━━━━━━━━━━━━━━━━━━━</div>
-          `;
-          resultBox.className = "result-box error";
+          const errorMsg = json.detail || 'Error desconocido';
+          showToast(false, 'ERROR AL REGISTRAR', `${errorMsg}<br><strong>Código:</strong> ${code}`);
+          statusBox.textContent = `Error - Esperando código...`;
           playBeep(false);
+
+          // Permitir reintento inmediato en caso de error
+          lastScannedCode = null;
         }
       } catch (err) {
-        resultBox.innerHTML = `
-          <div style="font-size: 18px; margin-bottom: 10px;">⚠️ ERROR DE CONEXIÓN</div>
-          <div>━━━━━━━━━━━━━━━━━━━━━━</div>
-          <div style="margin: 10px 0;">
-            No se pudo conectar con el servidor<br>
-            <small>${err.message}</small>
-          </div>
-          <div>━━━━━━━━━━━━━━━━━━━━━━</div>
-          <div style="margin-top: 10px; font-size: 12px;">
-            Verifica que la API esté corriendo en:<br>
-            <strong>${apiBase.value}</strong>
-          </div>
-        `;
-        resultBox.className = "result-box error";
+        showToast(false, 'ERROR DE CONEXIÓN', `
+          No se pudo conectar con el servidor<br>
+          <small>${err.message}</small><br>
+          <strong>API:</strong> ${apiBase.value}
+        `);
+        statusBox.textContent = `Error de conexión - Esperando código...`;
         playBeep(false);
+
+        // Permitir reintento inmediato en caso de error
+        lastScannedCode = null;
       }
     }
 
