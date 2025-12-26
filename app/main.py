@@ -1,6 +1,7 @@
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -32,6 +33,9 @@ app.include_router(barcodes.router)
 app.include_router(reports.router)
 app.include_router(biometric.router)
 app.include_router(admin.router)
+
+# Servir archivos estáticos del frontend
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
 
 
 @app.on_event("startup")
