@@ -93,7 +93,14 @@ async def seed():
         print("👤 Creando usuario administrador...")
         admin_email = os.getenv("ADMIN_EMAIL", "admin@tapwork.com")
         admin_password = os.getenv("ADMIN_PASSWORD", "Admin123!")
-        existing_admin = await session.scalar(select(User).where(User.email == admin_email))
+        admin_employee_id = "ADM-001"
+
+        # Verificar por email O por employee_id
+        existing_admin = await session.scalar(
+            select(User).where(
+                (User.email == admin_email) | (User.employee_id == admin_employee_id)
+            )
+        )
 
         if not existing_admin:
             # Obtener IDs necesarios
@@ -107,7 +114,7 @@ async def seed():
                 password_hash=hash_password(admin_password),
                 first_name="Administrador",
                 last_name="Sistema",
-                employee_id="ADM-001",
+                employee_id=admin_employee_id,
                 role=admin_role,
                 department=admin_dept,
                 shift=admin_shift,
