@@ -105,6 +105,7 @@ class UserOut(UserBase):
     is_email_verified: bool
     created_at: datetime
     updated_at: datetime
+    role: RoleOut | None = None
 
     model_config = {"from_attributes": True}
 
