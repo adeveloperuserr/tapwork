@@ -2,6 +2,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
@@ -91,7 +92,11 @@ async def register(request: Request, payload: schemas.RegistrationRequest, db: A
 @router.post("/login", response_model=schemas.AuthResponse)
 @limiter.limit("10/minute")
 async def login(request: Request, payload: schemas.LoginRequest, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.email == payload.email))
+    result = await db.execute(
+        select(User)
+        .where(User.email == payload.email)
+        .options(selectinload(User.role))
+    )
     user = result.scalar_one_or_none()
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciales inválidas")
