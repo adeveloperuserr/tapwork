@@ -11,17 +11,36 @@ from ..dependencies import require_role, get_current_user
 from ..models import BiometricData, User
 from ..database import get_db
 from .. import schemas
-from ..utils.face_recognition import (
-    extract_face_embedding,
-    verify_face,
-    NoFaceDetectedError,
-    MultipleFacesError,
-    LowQualityImageError,
-    LivenessCheckFailedError,
-    FaceRecognitionError,
-)
 
 logger = logging.getLogger(__name__)
+
+# Try to import face recognition utilities - graceful degradation
+try:
+    from ..utils.face_recognition import (
+        extract_face_embedding,
+        verify_face,
+        NoFaceDetectedError,
+        MultipleFacesError,
+        LowQualityImageError,
+        LivenessCheckFailedError,
+        FaceRecognitionError,
+    )
+    FACE_RECOGNITION_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"Face recognition not available: {e}")
+    FACE_RECOGNITION_AVAILABLE = False
+
+    # Define dummy exceptions for graceful degradation
+    class NoFaceDetectedError(Exception):
+        pass
+    class MultipleFacesError(Exception):
+        pass
+    class LowQualityImageError(Exception):
+        pass
+    class LivenessCheckFailedError(Exception):
+        pass
+    class FaceRecognitionError(Exception):
+        pass
 
 admin_or_hr = require_role(["Admin", "HR Manager"])
 
@@ -41,6 +60,12 @@ async def register_face(
     """
     Permite al usuario registrar su rostro para autenticación biométrica
     """
+    if not FACE_RECOGNITION_AVAILABLE:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Reconocimiento facial no disponible. Las dependencias no están instaladas correctamente."
+        )
+
     try:
         # Extraer embedding facial con todas las validaciones
         embedding_bytes = await extract_face_embedding(payload.image_data)

@@ -20,17 +20,36 @@ from ..utils.security import (
     hash_password,
     verify_password,
 )
-from ..utils.face_recognition import (
-    verify_face,
-    NoFaceDetectedError,
-    MultipleFacesError,
-    LowQualityImageError,
-    LivenessCheckFailedError,
-    FaceRecognitionError,
-)
 from ..database import get_db
 
 logger = logging.getLogger(__name__)
+
+# Try to import face recognition utilities - graceful degradation
+try:
+    from ..utils.face_recognition import (
+        verify_face,
+        NoFaceDetectedError,
+        MultipleFacesError,
+        LowQualityImageError,
+        LivenessCheckFailedError,
+        FaceRecognitionError,
+    )
+    FACE_RECOGNITION_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"Face recognition not available: {e}")
+    FACE_RECOGNITION_AVAILABLE = False
+
+    # Define dummy exceptions
+    class NoFaceDetectedError(Exception):
+        pass
+    class MultipleFacesError(Exception):
+        pass
+    class LowQualityImageError(Exception):
+        pass
+    class LivenessCheckFailedError(Exception):
+        pass
+    class FaceRecognitionError(Exception):
+        pass
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 limiter = Limiter(key_func=get_remote_address)
@@ -130,6 +149,12 @@ async def login_with_face(request: Request, payload: schemas.FaceLoginRequest, d
     Login usando reconocimiento facial
     Sistema de autenticación biométrica de nivel bancario
     """
+    if not FACE_RECOGNITION_AVAILABLE:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Reconocimiento facial no disponible. Las dependencias no están instaladas correctamente."
+        )
+
     try:
         # Buscar usuario por email
         result = await db.execute(
