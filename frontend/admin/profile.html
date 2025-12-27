@@ -5,165 +5,420 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mi Perfil - Tapwork</title>
   <link rel="stylesheet" href="css/admin.css">
+  <style>
+    .profile-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .profile-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px;
+      border-radius: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .profile-header-content {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .profile-avatar-large {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      font-weight: bold;
+      border: 4px solid white;
+    }
+
+    .profile-header-info h1 {
+      margin: 0 0 10px 0;
+      font-size: 32px;
+    }
+
+    .profile-header-info p {
+      margin: 5px 0;
+      opacity: 0.9;
+      font-size: 16px;
+    }
+
+    .profile-nav {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .profile-nav-btn {
+      flex: 1;
+      min-width: 200px;
+      padding: 20px;
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .profile-nav-btn:hover {
+      border-color: #667eea;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .profile-nav-btn.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-color: transparent;
+    }
+
+    .profile-nav-icon {
+      font-size: 24px;
+    }
+
+    .section-content {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .section-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 30px;
+      color: #1f2937;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .info-card {
+      background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+      padding: 25px;
+      border-radius: 12px;
+      border-left: 4px solid #667eea;
+    }
+
+    .info-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      color: #6b7280;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .info-value {
+      font-size: 18px;
+      color: #1f2937;
+      font-weight: 500;
+    }
+
+    .form-modern {
+      max-width: 600px;
+    }
+
+    .form-group-modern {
+      margin-bottom: 25px;
+    }
+
+    .form-group-modern label {
+      display: block;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .form-group-modern input {
+      width: 100%;
+      padding: 14px;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+
+    .form-group-modern input:focus {
+      border-color: #667eea;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-group-modern small {
+      display: block;
+      margin-top: 6px;
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    .btn-modern {
+      padding: 14px 32px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-primary-modern {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary-modern:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary-modern {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .btn-secondary-modern:hover {
+      background: #e5e7eb;
+    }
+
+    .barcode-display {
+      background: white;
+      padding: 40px;
+      border-radius: 15px;
+      text-align: center;
+      border: 2px dashed #e5e7eb;
+      margin-bottom: 30px;
+    }
+
+    .barcode-display canvas {
+      margin: 20px 0;
+    }
+
+    .barcode-employee-id {
+      font-size: 24px;
+      font-weight: 700;
+      color: #667eea;
+      margin-top: 15px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    .attendance-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .attendance-table thead {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .attendance-table th {
+      padding: 15px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+
+    .attendance-table th:first-child {
+      border-radius: 10px 0 0 0;
+    }
+
+    .attendance-table th:last-child {
+      border-radius: 0 10px 0 0;
+    }
+
+    .attendance-table td {
+      padding: 15px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .attendance-table tbody tr:hover {
+      background: #f9fafb;
+    }
+
+    .logout-section {
+      margin-top: 40px;
+      text-align: center;
+      padding: 30px;
+      background: #f9fafb;
+      border-radius: 15px;
+    }
+
+    .alert-modern {
+      padding: 15px 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+
+    .alert-success-modern {
+      background: #d1fae5;
+      color: #065f46;
+      border-left: 4px solid #10b981;
+    }
+
+    .alert-error-modern {
+      background: #fee2e2;
+      color: #991b1b;
+      border-left: 4px solid #ef4444;
+    }
+
+    .section-hidden {
+      display: none;
+    }
+  </style>
 </head>
-<body>
-  <div class="admin-layout">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <h2 class="sidebar-title">TAPWORK</h2>
+<body style="background: #f3f4f6; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+  <div class="profile-container">
+    <!-- Header -->
+    <div class="profile-header">
+      <div class="profile-header-content">
+        <div class="profile-avatar-large" id="headerAvatar">U</div>
+        <div class="profile-header-info">
+          <h1 id="headerName">Cargando...</h1>
+          <p id="headerEmail">-</p>
+          <p><strong>ID:</strong> <span id="headerEmployeeId">-</span></p>
+        </div>
       </div>
+    </div>
 
-      <nav class="sidebar-nav">
-        <a href="profile.html" class="nav-link active">
-          <span class="nav-icon">👤</span>
-          <span>Mi Perfil</span>
-        </a>
-        <a href="#" class="nav-link" onclick="showSection('password'); return false;">
-          <span class="nav-icon">🔒</span>
-          <span>Cambiar Contraseña</span>
-        </a>
-        <a href="#" class="nav-link" onclick="showSection('barcode'); return false;">
-          <span class="nav-icon">🏷️</span>
-          <span>Mi Código</span>
-        </a>
-        <a href="#" class="nav-link" onclick="showSection('attendance'); return false;">
-          <span class="nav-icon">📋</span>
-          <span>Mis Asistencias</span>
-        </a>
-      </nav>
+    <!-- Navigation -->
+    <div class="profile-nav">
+      <button class="profile-nav-btn active" onclick="showSection('profile')">
+        <span class="profile-nav-icon">👤</span>
+        <span>Mi Perfil</span>
+      </button>
+      <button class="profile-nav-btn" onclick="showSection('password')">
+        <span class="profile-nav-icon">🔒</span>
+        <span>Cambiar Contraseña</span>
+      </button>
+      <button class="profile-nav-btn" onclick="showSection('barcode')">
+        <span class="profile-nav-icon">📱</span>
+        <span>Mi Código</span>
+      </button>
+      <button class="profile-nav-btn" onclick="showSection('attendance')">
+        <span class="profile-nav-icon">📊</span>
+        <span>Mis Asistencias</span>
+      </button>
+    </div>
 
-      <div class="sidebar-footer">
-        <button class="btn btn-secondary btn-block" id="logoutBtn">Cerrar Sesión</button>
+    <!-- Profile Section -->
+    <div id="profileSection" class="section-content">
+      <h2 class="section-title">Información Personal</h2>
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-label">Nombre Completo</div>
+          <div class="info-value" id="fullName">-</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">Email</div>
+          <div class="info-value" id="email">-</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">ID de Empleado</div>
+          <div class="info-value" id="employeeId">-</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">Departamento</div>
+          <div class="info-value" id="department">-</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">Turno</div>
+          <div class="info-value" id="shift">-</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">Rol</div>
+          <div class="info-value" id="role">-</div>
+        </div>
       </div>
-    </aside>
+    </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-      <!-- Header -->
-      <header class="content-header">
-        <h1>Mi Perfil</h1>
-        <div class="header-actions">
-          <div class="user-info">
-            <div class="user-avatar" id="userAvatar">U</div>
-            <span id="userName">Usuario</span>
-          </div>
+    <!-- Password Section -->
+    <div id="passwordSection" class="section-content section-hidden">
+      <h2 class="section-title">Cambiar Contraseña</h2>
+      <form id="passwordForm" class="form-modern">
+        <div class="form-group-modern">
+          <label for="currentPassword">Contraseña Actual *</label>
+          <input type="password" id="currentPassword" required>
         </div>
-      </header>
+        <div class="form-group-modern">
+          <label for="newPassword">Nueva Contraseña *</label>
+          <input type="password" id="newPassword" required minlength="8">
+          <small>Mínimo 8 caracteres, debe incluir mayúsculas, minúsculas y números</small>
+        </div>
+        <div class="form-group-modern">
+          <label for="confirmPassword">Confirmar Nueva Contraseña *</label>
+          <input type="password" id="confirmPassword" required>
+        </div>
+        <div id="passwordError" class="alert-error-modern alert-modern hidden"></div>
+        <div id="passwordSuccess" class="alert-success-modern alert-modern hidden"></div>
+        <button type="submit" class="btn-modern btn-primary-modern">Actualizar Contraseña</button>
+      </form>
+    </div>
 
-      <!-- Profile Section -->
-      <main class="content-body" id="profileSection">
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">Información Personal</h2>
-          </div>
-          <div class="card-body">
-            <div class="profile-info">
-              <div class="info-row">
-                <label>Nombre Completo:</label>
-                <span id="fullName">-</span>
-              </div>
-              <div class="info-row">
-                <label>Email:</label>
-                <span id="email">-</span>
-              </div>
-              <div class="info-row">
-                <label>ID de Empleado:</label>
-                <span id="employeeId">-</span>
-              </div>
-              <div class="info-row">
-                <label>Departamento:</label>
-                <span id="department">-</span>
-              </div>
-              <div class="info-row">
-                <label>Turno:</label>
-                <span id="shift">-</span>
-              </div>
-              <div class="info-row">
-                <label>Rol:</label>
-                <span id="role">-</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
+    <!-- Barcode Section -->
+    <div id="barcodeSection" class="section-content section-hidden">
+      <h2 class="section-title">Mi Código de Barras</h2>
+      <div class="barcode-display">
+        <p style="color: #6b7280; margin-bottom: 10px;">Tu código personal para registro de asistencia</p>
+        <canvas id="barcodeCanvas"></canvas>
+        <div class="barcode-employee-id" id="barcodeEmployeeId">-</div>
+      </div>
+      <div class="action-buttons">
+        <button class="btn-modern btn-primary-modern" onclick="downloadBarcode()">📥 Descargar Código</button>
+        <button class="btn-modern btn-secondary-modern" onclick="resendBarcodeEmail()">📧 Enviar a mi Email</button>
+      </div>
+      <div id="barcodeSuccess" class="alert-success-modern alert-modern hidden"></div>
+    </div>
 
-      <!-- Change Password Section -->
-      <main class="content-body hidden" id="passwordSection">
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">Cambiar Contraseña</h2>
-          </div>
-          <div class="card-body">
-            <form id="passwordForm">
-              <div class="form-group">
-                <label for="currentPassword">Contraseña Actual *</label>
-                <input type="password" id="currentPassword" required>
-              </div>
-              <div class="form-group">
-                <label for="newPassword">Nueva Contraseña *</label>
-                <input type="password" id="newPassword" required minlength="8">
-                <small>Mínimo 8 caracteres, debe incluir mayúsculas, minúsculas y números</small>
-              </div>
-              <div class="form-group">
-                <label for="confirmPassword">Confirmar Nueva Contraseña *</label>
-                <input type="password" id="confirmPassword" required>
-              </div>
-              <div id="passwordError" class="alert alert-error hidden"></div>
-              <div id="passwordSuccess" class="alert alert-success hidden"></div>
-              <button type="submit" class="btn btn-primary">Actualizar Contraseña</button>
-            </form>
-          </div>
-        </div>
-      </main>
+    <!-- Attendance Section -->
+    <div id="attendanceSection" class="section-content section-hidden">
+      <h2 class="section-title">Historial de Asistencias (Últimos 30 días)</h2>
+      <table class="attendance-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Hora Entrada</th>
+            <th>Hora Salida</th>
+            <th>Horas Trabajadas</th>
+          </tr>
+        </thead>
+        <tbody id="attendanceTable">
+          <tr>
+            <td colspan="4" style="text-align: center; padding: 40px; color: #6b7280;">Cargando...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-      <!-- Barcode Section -->
-      <main class="content-body hidden" id="barcodeSection">
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">Mi Código de Barras</h2>
-          </div>
-          <div class="card-body">
-            <div class="barcode-container">
-              <canvas id="barcodeCanvas"></canvas>
-              <p class="barcode-id"></p>
-            </div>
-            <div class="barcode-actions">
-              <button class="btn btn-primary" onclick="downloadBarcode()">Descargar Código</button>
-              <button class="btn btn-secondary" onclick="resendBarcodeEmail()">Enviar a mi Email</button>
-            </div>
-            <div id="barcodeSuccess" class="alert alert-success hidden"></div>
-          </div>
-        </div>
-      </main>
-
-      <!-- Attendance Section -->
-      <main class="content-body hidden" id="attendanceSection">
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">Historial de Asistencias</h2>
-          </div>
-          <div class="card-body">
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Fecha</th>
-                    <th>Entrada</th>
-                    <th>Salida</th>
-                    <th>Horas Trabajadas</th>
-                  </tr>
-                </thead>
-                <tbody id="attendanceTable">
-                  <tr>
-                    <td colspan="4" class="text-center">Cargando...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </main>
+    <!-- Logout Section -->
+    <div class="logout-section">
+      <button class="btn-modern btn-secondary-modern" id="logoutBtn" style="padding: 12px 40px;">Cerrar Sesión</button>
     </div>
   </div>
 

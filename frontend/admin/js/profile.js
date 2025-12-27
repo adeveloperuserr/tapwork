@@ -26,10 +26,13 @@ async function loadUserInfo() {
 
     currentUser = await res.json();
 
-    // Update UI
-    document.getElementById('userName').textContent = `${currentUser.first_name} ${currentUser.last_name}`;
-    document.getElementById('userAvatar').textContent = currentUser.first_name.charAt(0).toUpperCase();
+    // Update header
+    document.getElementById('headerName').textContent = `${currentUser.first_name} ${currentUser.last_name}`;
+    document.getElementById('headerEmail').textContent = currentUser.email;
+    document.getElementById('headerEmployeeId').textContent = currentUser.employee_id;
+    document.getElementById('headerAvatar').textContent = currentUser.first_name.charAt(0).toUpperCase();
 
+    // Update profile info
     document.getElementById('fullName').textContent = `${currentUser.first_name} ${currentUser.last_name}`;
     document.getElementById('email').textContent = currentUser.email;
     document.getElementById('employeeId').textContent = currentUser.employee_id;
@@ -53,12 +56,13 @@ function loadBarcode() {
   try {
     JsBarcode("#barcodeCanvas", currentUser.employee_id, {
       format: "CODE128",
-      width: 2,
-      height: 100,
+      width: 3,
+      height: 120,
       displayValue: true,
-      fontSize: 20
+      fontSize: 20,
+      margin: 10
     });
-    document.querySelector('.barcode-id').textContent = currentUser.employee_id;
+    document.getElementById('barcodeEmployeeId').textContent = currentUser.employee_id;
   } catch (error) {
     console.error('Error generating barcode:', error);
   }
@@ -84,7 +88,7 @@ window.resendBarcodeEmail = async function() {
     if (!res.ok) throw new Error('Error al enviar email');
 
     const success = document.getElementById('barcodeSuccess');
-    success.textContent = 'Código de barras enviado a tu email';
+    success.textContent = '✅ Código de barras enviado a tu email exitosamente';
     success.classList.remove('hidden');
     setTimeout(() => success.classList.add('hidden'), 5000);
   } catch (error) {
@@ -108,13 +112,19 @@ document.getElementById('passwordForm').addEventListener('submit', async (e) => 
 
   // Validations
   if (newPassword !== confirmPassword) {
-    errorDiv.textContent = 'Las contraseñas no coinciden';
+    errorDiv.textContent = '❌ Las contraseñas no coinciden';
     errorDiv.classList.remove('hidden');
     return;
   }
 
   if (newPassword.length < 8) {
-    errorDiv.textContent = 'La contraseña debe tener al menos 8 caracteres';
+    errorDiv.textContent = '❌ La contraseña debe tener al menos 8 caracteres';
+    errorDiv.classList.remove('hidden');
+    return;
+  }
+
+  if (!/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+    errorDiv.textContent = '❌ La contraseña debe incluir mayúsculas, minúsculas y números';
     errorDiv.classList.remove('hidden');
     return;
   }
@@ -135,11 +145,14 @@ document.getElementById('passwordForm').addEventListener('submit', async (e) => 
       throw new Error(data.detail || 'Error al cambiar la contraseña');
     }
 
-    successDiv.textContent = '¡Contraseña actualizada exitosamente!';
+    successDiv.textContent = '✅ ¡Contraseña actualizada exitosamente!';
     successDiv.classList.remove('hidden');
     document.getElementById('passwordForm').reset();
+
+    // Auto hide after 5 seconds
+    setTimeout(() => successDiv.classList.add('hidden'), 5000);
   } catch (error) {
-    errorDiv.textContent = error.message;
+    errorDiv.textContent = '❌ ' + error.message;
     errorDiv.classList.remove('hidden');
   }
 });
@@ -158,7 +171,7 @@ async function loadAttendance() {
     const tbody = document.getElementById('attendanceTable');
 
     if (records.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay registros de asistencia</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; color: #6b7280;">No hay registros de asistencia en los últimos 30 días</td></tr>';
       return;
     }
 
@@ -176,51 +189,58 @@ async function loadAttendance() {
 
       return `
         <tr>
-          <td>${checkIn.toLocaleDateString()}</td>
-          <td>${checkIn.toLocaleTimeString()}</td>
-          <td>${checkOut ? checkOut.toLocaleTimeString() : '-'}</td>
-          <td>${hoursWorked}</td>
+          <td><strong>${checkIn.toLocaleDateString('es-MX', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</strong></td>
+          <td>${checkIn.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</td>
+          <td>${checkOut ? checkOut.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '<span style="color: #ef4444;">Sin salida</span>'}</td>
+          <td><strong>${hoursWorked}</strong></td>
         </tr>
       `;
     }).join('');
   } catch (error) {
     console.error('Error loading attendance:', error);
     document.getElementById('attendanceTable').innerHTML =
-      '<tr><td colspan="4" class="text-center text-danger">Error al cargar asistencias</td></tr>';
+      '<tr><td colspan="4" style="text-align: center; padding: 40px; color: #ef4444;">❌ Error al cargar asistencias</td></tr>';
   }
 }
 
 // Show section
 window.showSection = function(section) {
   // Hide all sections
-  document.getElementById('profileSection').classList.add('hidden');
-  document.getElementById('passwordSection').classList.add('hidden');
-  document.getElementById('barcodeSection').classList.add('hidden');
-  document.getElementById('attendanceSection').classList.add('hidden');
+  document.getElementById('profileSection').classList.add('section-hidden');
+  document.getElementById('passwordSection').classList.add('section-hidden');
+  document.getElementById('barcodeSection').classList.add('section-hidden');
+  document.getElementById('attendanceSection').classList.add('section-hidden');
 
-  // Remove active from all nav links
-  document.querySelectorAll('.nav-link').forEach(link => {
-    link.classList.remove('active');
+  // Remove active from all nav buttons
+  document.querySelectorAll('.profile-nav-btn').forEach(btn => {
+    btn.classList.remove('active');
   });
 
-  // Show selected section
-  if (section === 'password') {
-    document.getElementById('passwordSection').classList.remove('hidden');
+  // Show selected section and activate button
+  const buttons = document.querySelectorAll('.profile-nav-btn');
+  if (section === 'profile') {
+    document.getElementById('profileSection').classList.remove('section-hidden');
+    buttons[0].classList.add('active');
+  } else if (section === 'password') {
+    document.getElementById('passwordSection').classList.remove('section-hidden');
+    buttons[1].classList.add('active');
   } else if (section === 'barcode') {
-    document.getElementById('barcodeSection').classList.remove('hidden');
+    document.getElementById('barcodeSection').classList.remove('section-hidden');
+    buttons[2].classList.add('active');
   } else if (section === 'attendance') {
-    document.getElementById('attendanceSection').classList.remove('hidden');
+    document.getElementById('attendanceSection').classList.remove('section-hidden');
+    buttons[3].classList.add('active');
     loadAttendance();
-  } else {
-    document.getElementById('profileSection').classList.remove('hidden');
   }
 };
 
 // Logout
 document.getElementById('logoutBtn').addEventListener('click', () => {
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('user');
-  window.location.href = 'login.html';
+  if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user');
+    window.location.href = 'login.html';
+  }
 });
 
 // Load initial data
