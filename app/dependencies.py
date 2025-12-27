@@ -33,7 +33,11 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     result = await db.execute(
         select(User)
         .where(User.id == user_id)
-        .options(selectinload(User.role))
+        .options(
+            selectinload(User.role),
+            selectinload(User.department),
+            selectinload(User.shift)
+        )
     )
     user = result.scalar_one_or_none()
     if not user or not user.is_active:

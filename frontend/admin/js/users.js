@@ -186,6 +186,11 @@ function openNewUserModal() {
   document.getElementById('userId').value = '';
   document.getElementById('password').required = true;
   document.getElementById('passwordGroup').querySelector('small').textContent = 'Mínimo 8 caracteres';
+
+  // Update button text for create mode
+  saveBtn.querySelector('.btn-text').textContent = 'Guardar Usuario';
+  saveBtn.querySelector('.btn-loader').innerHTML = '<span class="spinner"></span> Guardando...';
+
   formError.classList.add('hidden');
   formSuccess.classList.add('hidden');
   userModal.classList.remove('hidden');
@@ -212,6 +217,10 @@ window.editUser = async function(userId) {
 
   document.getElementById('passwordGroup').querySelector('small').textContent =
     'Dejar en blanco para mantener la contraseña actual';
+
+  // Update button text for edit mode
+  saveBtn.querySelector('.btn-text').textContent = 'Actualizar Usuario';
+  saveBtn.querySelector('.btn-loader').innerHTML = '<span class="spinner"></span> Actualizando...';
 
   formError.classList.add('hidden');
   formSuccess.classList.add('hidden');
