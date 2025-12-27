@@ -95,7 +95,11 @@ async def login(request: Request, payload: schemas.LoginRequest, db: AsyncSessio
     result = await db.execute(
         select(User)
         .where(User.email == payload.email)
-        .options(selectinload(User.role))
+        .options(
+            selectinload(User.role),
+            selectinload(User.department),
+            selectinload(User.shift)
+        )
     )
     user = result.scalar_one_or_none()
     if not user or not verify_password(payload.password, user.password_hash):
