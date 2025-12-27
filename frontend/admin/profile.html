@@ -317,6 +317,10 @@
         <span class="profile-nav-icon">🔒</span>
         <span>Cambiar Contraseña</span>
       </button>
+      <button class="profile-nav-btn" onclick="showSection('face')">
+        <span class="profile-nav-icon">🔐</span>
+        <span>Reconocimiento Facial</span>
+      </button>
       <button class="profile-nav-btn" onclick="showSection('barcode')">
         <span class="profile-nav-icon">📱</span>
         <span>Mi Código</span>
@@ -379,6 +383,97 @@
         <div id="passwordSuccess" class="alert-success-modern alert-modern hidden"></div>
         <button type="submit" class="btn-modern btn-primary-modern">Actualizar Contraseña</button>
       </form>
+    </div>
+
+    <!-- Face Recognition Section -->
+    <div id="faceSection" class="section-content section-hidden">
+      <h2 class="section-title">🔐 Reconocimiento Facial</h2>
+      <p style="color: #6b7280; margin-bottom: 30px;">
+        Registra tu rostro para acceder de forma rápida y segura con autenticación biométrica de nivel bancario.
+        Utiliza tecnología de última generación con detección de vida para prevenir accesos no autorizados.
+      </p>
+
+      <!-- Status Card -->
+      <div id="faceStatusCard" class="info-card" style="margin-bottom: 30px; padding: 25px;">
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+          <span id="faceStatusIcon" style="font-size: 48px;">🔒</span>
+          <div style="flex: 1;">
+            <div class="info-label">Estado del Registro Facial</div>
+            <div class="info-value" id="faceStatus" style="font-size: 20px;">Cargando...</div>
+          </div>
+        </div>
+        <div id="faceStatusDetails" style="color: #6b7280; font-size: 14px; display: none;">
+          <p style="margin: 5px 0;"><strong>Registrado:</strong> <span id="faceEnrolledAt">-</span></p>
+          <p style="margin: 5px 0;"><strong>Última verificación:</strong> <span id="faceLastVerified">-</span></p>
+        </div>
+      </div>
+
+      <!-- Camera Section -->
+      <div id="faceCameraSection" style="margin-bottom: 30px;">
+        <div style="background: #1f2937; border-radius: 15px; padding: 30px; text-align: center; position: relative;">
+          <video id="faceVideo" width="640" height="480" autoplay style="border-radius: 10px; max-width: 100%; display: none; background: #000;"></video>
+          <canvas id="faceCanvas" width="640" height="480" style="border-radius: 10px; max-width: 100%; display: none;"></canvas>
+
+          <div id="facePlaceholder" style="min-height: 400px; display: flex; align-items: center; justify-content: center; flex-direction: column; color: white;">
+            <span style="font-size: 64px; margin-bottom: 20px;">📷</span>
+            <p style="font-size: 18px; margin: 0;">Haz clic en "Activar Cámara" para comenzar</p>
+          </div>
+
+          <!-- Face Detection Overlay -->
+          <div id="faceOverlay" style="position: absolute; top: 30px; left: 30px; right: 30px; bottom: 30px; border: 3px solid #10b981; border-radius: 10px; display: none; pointer-events: none;">
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(16, 185, 129, 0.9); color: white; padding: 15px 30px; border-radius: 10px; font-weight: 600; font-size: 16px;">
+              ✓ Rostro Detectado
+            </div>
+          </div>
+        </div>
+
+        <!-- Instructions -->
+        <div style="margin-top: 20px; padding: 20px; background: #eff6ff; border-radius: 10px; border-left: 4px solid #3b82f6;">
+          <h4 style="margin: 0 0 10px 0; color: #1e40af; font-size: 16px;">📋 Instrucciones para un registro exitoso:</h4>
+          <ul style="margin: 0; padding-left: 20px; color: #1e40af; font-size: 14px;">
+            <li>Asegúrate de estar en un lugar bien iluminado</li>
+            <li>Mira directamente a la cámara</li>
+            <li>Mantén tu rostro centrado en el recuadro</li>
+            <li>Evita usar gafas de sol o cubrir tu rostro</li>
+            <li>Mantente quieto durante la captura</li>
+          </ul>
+        </div>
+
+        <!-- Security Info -->
+        <div style="margin-top: 15px; padding: 15px; background: #fef3c7; border-radius: 10px; border-left: 4px solid #f59e0b;">
+          <p style="margin: 0; color: #92400e; font-size: 13px;">
+            <strong>🔒 Seguridad Bancaria:</strong> Tu información facial se procesa con encriptación de nivel bancario.
+            Incluye detección de vida para prevenir suplantaciones con fotos o videos.
+          </p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons" style="margin-bottom: 20px;">
+        <button id="startCameraBtn" class="btn-modern btn-primary-modern" onclick="startCamera()">
+          📷 Activar Cámara
+        </button>
+        <button id="captureFaceBtn" class="btn-modern btn-primary-modern" onclick="captureFace()" style="display: none;">
+          📸 Capturar Rostro
+        </button>
+        <button id="stopCameraBtn" class="btn-modern btn-secondary-modern" onclick="stopCamera()" style="display: none;">
+          ⏹️ Detener Cámara
+        </button>
+        <button id="deleteFaceBtn" class="btn-modern btn-secondary-modern" onclick="deleteFaceRegistration()" style="display: none;">
+          🗑️ Eliminar Registro
+        </button>
+      </div>
+
+      <!-- Messages -->
+      <div id="faceError" class="alert-error-modern alert-modern hidden"></div>
+      <div id="faceSuccess" class="alert-success-modern alert-modern hidden"></div>
+
+      <!-- Processing Indicator -->
+      <div id="faceProcessing" style="display: none; text-align: center; padding: 30px; background: #f3f4f6; border-radius: 15px; margin-top: 20px;">
+        <div style="font-size: 48px; margin-bottom: 15px;">⏳</div>
+        <p style="font-size: 18px; font-weight: 600; color: #374151; margin: 0;">Procesando imagen...</p>
+        <p style="font-size: 14px; color: #6b7280; margin: 10px 0 0 0;">Analizando calidad, detección de vida y extrayendo características faciales</p>
+      </div>
     </div>
 
     <!-- Barcode Section -->

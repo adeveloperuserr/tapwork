@@ -15,6 +15,10 @@ const authHeaders = {
 // Current user data
 let currentUser = null;
 
+// Face recognition state
+let videoStream = null;
+let faceRegistrationStatus = null;
+
 // Load user info
 async function loadUserInfo() {
   try {
@@ -205,9 +209,15 @@ async function loadAttendance() {
 
 // Show section
 window.showSection = function(section) {
+  // Stop camera if switching away from face section
+  if (videoStream && section !== 'face') {
+    stopCamera();
+  }
+
   // Hide all sections
   document.getElementById('profileSection').classList.add('section-hidden');
   document.getElementById('passwordSection').classList.add('section-hidden');
+  document.getElementById('faceSection').classList.add('section-hidden');
   document.getElementById('barcodeSection').classList.add('section-hidden');
   document.getElementById('attendanceSection').classList.add('section-hidden');
 
@@ -224,15 +234,238 @@ window.showSection = function(section) {
   } else if (section === 'password') {
     document.getElementById('passwordSection').classList.remove('section-hidden');
     buttons[1].classList.add('active');
+  } else if (section === 'face') {
+    document.getElementById('faceSection').classList.remove('section-hidden');
+    buttons[2].classList.add('active');
+    loadFaceStatus();
   } else if (section === 'barcode') {
     document.getElementById('barcodeSection').classList.remove('section-hidden');
-    buttons[2].classList.add('active');
+    buttons[3].classList.add('active');
   } else if (section === 'attendance') {
     document.getElementById('attendanceSection').classList.remove('section-hidden');
-    buttons[3].classList.add('active');
+    buttons[4].classList.add('active');
     loadAttendance();
   }
 };
+
+// ============================================================================
+// FACE RECOGNITION FUNCTIONS
+// ============================================================================
+
+// Load face registration status
+async function loadFaceStatus() {
+  try {
+    const res = await fetch(`${API_BASE}/api/biometric/face/status`, {
+      headers: authHeaders
+    });
+
+    if (!res.ok) throw new Error('Error al cargar estado');
+
+    faceRegistrationStatus = await res.json();
+
+    const statusIcon = document.getElementById('faceStatusIcon');
+    const statusText = document.getElementById('faceStatus');
+    const statusDetails = document.getElementById('faceStatusDetails');
+    const deleteBtn = document.getElementById('deleteFaceBtn');
+
+    if (faceRegistrationStatus.has_face_registered) {
+      statusIcon.textContent = '✅';
+      statusText.textContent = 'Rostro Registrado';
+      statusText.style.color = '#10b981';
+      statusDetails.style.display = 'block';
+
+      const enrolledDate = new Date(faceRegistrationStatus.enrolled_at);
+      document.getElementById('faceEnrolledAt').textContent = enrolledDate.toLocaleString('es-MX');
+
+      if (faceRegistrationStatus.last_verified_at) {
+        const verifiedDate = new Date(faceRegistrationStatus.last_verified_at);
+        document.getElementById('faceLastVerified').textContent = verifiedDate.toLocaleString('es-MX');
+      } else {
+        document.getElementById('faceLastVerified').textContent = 'Nunca';
+      }
+
+      deleteBtn.style.display = 'inline-block';
+    } else {
+      statusIcon.textContent = '🔒';
+      statusText.textContent = 'No Registrado';
+      statusText.style.color = '#6b7280';
+      statusDetails.style.display = 'none';
+      deleteBtn.style.display = 'none';
+    }
+  } catch (error) {
+    console.error('Error loading face status:', error);
+  }
+}
+
+// Start camera
+window.startCamera = async function() {
+  try {
+    const video = document.getElementById('faceVideo');
+    const placeholder = document.getElementById('facePlaceholder');
+    const startBtn = document.getElementById('startCameraBtn');
+    const captureBtn = document.getElementById('captureFaceBtn');
+    const stopBtn = document.getElementById('stopCameraBtn');
+
+    // Request camera access
+    videoStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        facingMode: 'user'
+      },
+      audio: false
+    });
+
+    video.srcObject = videoStream;
+
+    // Show video, hide placeholder
+    placeholder.style.display = 'none';
+    video.style.display = 'block';
+
+    // Update buttons
+    startBtn.style.display = 'none';
+    captureBtn.style.display = 'inline-block';
+    stopBtn.style.display = 'inline-block';
+
+  } catch (error) {
+    console.error('Error accessing camera:', error);
+    const errorDiv = document.getElementById('faceError');
+    errorDiv.textContent = '❌ Error al acceder a la cámara. Asegúrate de dar permisos.';
+    errorDiv.classList.remove('hidden');
+    setTimeout(() => errorDiv.classList.add('hidden'), 5000);
+  }
+};
+
+// Stop camera
+window.stopCamera = function() {
+  if (videoStream) {
+    videoStream.getTracks().forEach(track => track.stop());
+    videoStream = null;
+  }
+
+  const video = document.getElementById('faceVideo');
+  const canvas = document.getElementById('faceCanvas');
+  const placeholder = document.getElementById('facePlaceholder');
+  const startBtn = document.getElementById('startCameraBtn');
+  const captureBtn = document.getElementById('captureFaceBtn');
+  const stopBtn = document.getElementById('stopCameraBtn');
+
+  video.style.display = 'none';
+  canvas.style.display = 'none';
+  placeholder.style.display = 'flex';
+
+  startBtn.style.display = 'inline-block';
+  captureBtn.style.display = 'none';
+  stopBtn.style.display = 'none';
+};
+
+// Capture face and register
+window.captureFace = async function() {
+  const video = document.getElementById('faceVideo');
+  const canvas = document.getElementById('faceCanvas');
+  const ctx = canvas.getContext('2d');
+  const errorDiv = document.getElementById('faceError');
+  const successDiv = document.getElementById('faceSuccess');
+  const processingDiv = document.getElementById('faceProcessing');
+
+  // Hide previous messages
+  errorDiv.classList.add('hidden');
+  successDiv.classList.add('hidden');
+
+  try {
+    // Capture frame from video
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Convert canvas to base64
+    const imageData = canvas.toDataURL('image/jpeg', 0.95);
+
+    // Show processing indicator
+    processingDiv.style.display = 'block';
+
+    // Send to backend
+    const res = await fetch(`${API_BASE}/api/biometric/face/register`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({
+        image_data: imageData
+      })
+    });
+
+    const data = await res.json();
+
+    // Hide processing indicator
+    processingDiv.style.display = 'none';
+
+    if (!res.ok) {
+      throw new Error(data.detail || 'Error al registrar rostro');
+    }
+
+    // Success
+    successDiv.textContent = '✅ ' + data.message;
+    successDiv.classList.remove('hidden');
+
+    // Stop camera
+    stopCamera();
+
+    // Reload status
+    await loadFaceStatus();
+
+    // Auto hide success message
+    setTimeout(() => successDiv.classList.add('hidden'), 5000);
+
+  } catch (error) {
+    processingDiv.style.display = 'none';
+    errorDiv.textContent = '❌ ' + error.message;
+    errorDiv.classList.remove('hidden');
+    setTimeout(() => errorDiv.classList.add('hidden'), 8000);
+  }
+};
+
+// Delete face registration
+window.deleteFaceRegistration = async function() {
+  if (!confirm('¿Estás seguro de que deseas eliminar tu registro facial?\n\nDeberás registrar tu rostro nuevamente para usar esta funcionalidad.')) {
+    return;
+  }
+
+  const errorDiv = document.getElementById('faceError');
+  const successDiv = document.getElementById('faceSuccess');
+
+  errorDiv.classList.add('hidden');
+  successDiv.classList.add('hidden');
+
+  try {
+    const res = await fetch(`${API_BASE}/api/biometric/face`, {
+      method: 'DELETE',
+      headers: authHeaders
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.detail || 'Error al eliminar registro');
+    }
+
+    successDiv.textContent = '✅ ' + data.detail;
+    successDiv.classList.remove('hidden');
+
+    // Reload status
+    await loadFaceStatus();
+
+    // Auto hide
+    setTimeout(() => successDiv.classList.add('hidden'), 5000);
+
+  } catch (error) {
+    errorDiv.textContent = '❌ ' + error.message;
+    errorDiv.classList.remove('hidden');
+    setTimeout(() => errorDiv.classList.add('hidden'), 5000);
+  }
+};
+
+// ============================================================================
+// END FACE RECOGNITION FUNCTIONS
+// ============================================================================
 
 // Logout
 document.getElementById('logoutBtn').addEventListener('click', () => {

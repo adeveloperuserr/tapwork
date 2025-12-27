@@ -5,6 +5,54 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - Tapwork Admin</title>
   <link rel="stylesheet" href="css/admin.css">
+  <style>
+    .login-tab {
+      flex: 1;
+      padding: 12px 20px;
+      background: white;
+      border: 2px solid transparent;
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 15px;
+      font-weight: 500;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-tab:hover {
+      background: #f9fafb;
+      color: #374151;
+    }
+    .login-tab.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-color: transparent;
+    }
+    .login-method {
+      display: none;
+    }
+    .login-method.active {
+      display: block;
+    }
+    #faceLoginVideo {
+      width: 100%;
+      max-width: 500px;
+      border-radius: 12px;
+      background: #000;
+      margin: 20px auto;
+      display: block;
+    }
+    .face-placeholder {
+      background: #1f2937;
+      border-radius: 12px;
+      padding: 60px 20px;
+      text-align: center;
+      color: white;
+      margin: 20px 0;
+    }
+  </style>
 </head>
 <body class="login-page">
   <div class="login-container">
@@ -15,40 +63,111 @@
         <p>Ingresa tus credenciales para continuar</p>
       </div>
 
-      <form id="loginForm" class="login-form">
-        <div class="form-group">
-          <label for="email">Correo Electrónico</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            required
-            autocomplete="email"
-            placeholder="admin@tapwork.com"
-          >
-        </div>
+      <!-- Login Method Tabs -->
+      <div style="display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">
+        <button type="button" id="passwordTab" class="login-tab active" onclick="switchLoginMethod('password')">
+          <span style="font-size: 20px; margin-right: 8px;">🔑</span>
+          <span>Contraseña</span>
+        </button>
+        <button type="button" id="faceTab" class="login-tab" onclick="switchLoginMethod('face')">
+          <span style="font-size: 20px; margin-right: 8px;">🔐</span>
+          <span>Reconocimiento Facial</span>
+        </button>
+      </div>
 
-        <div class="form-group">
-          <label for="password">Contraseña</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            required
-            autocomplete="current-password"
-            placeholder="••••••••"
-          >
-        </div>
+      <!-- Password Login Form -->
+      <div id="passwordLogin" class="login-method active">
+        <form id="loginForm" class="login-form">
+          <div class="form-group">
+            <label for="email">Correo Electrónico</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              autocomplete="email"
+              placeholder="admin@tapwork.com"
+            >
+          </div>
 
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary btn-block" id="loginBtn">
-            <span class="btn-text">Iniciar Sesión</span>
-            <span class="btn-loader hidden">Verificando...</span>
-          </button>
-        </div>
+          <div class="form-group">
+            <label for="password">Contraseña</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              required
+              autocomplete="current-password"
+              placeholder="••••••••"
+            >
+          </div>
 
-        <div id="errorMessage" class="alert alert-error hidden"></div>
-      </form>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-block" id="loginBtn">
+              <span class="btn-text">Iniciar Sesión</span>
+              <span class="btn-loader hidden">Verificando...</span>
+            </button>
+          </div>
+
+          <div id="errorMessage" class="alert alert-error hidden"></div>
+        </form>
+      </div>
+
+      <!-- Face Recognition Login -->
+      <div id="faceLogin" class="login-method">
+        <div class="login-form">
+          <div class="form-group">
+            <label for="faceEmail">Correo Electrónico</label>
+            <input
+              type="email"
+              id="faceEmail"
+              name="faceEmail"
+              required
+              autocomplete="email"
+              placeholder="tu-email@tapwork.com"
+            >
+          </div>
+
+          <!-- Camera Section -->
+          <div style="margin: 25px 0;">
+            <video id="faceLoginVideo" width="640" height="480" autoplay style="display: none;"></video>
+            <canvas id="faceLoginCanvas" style="display: none;"></canvas>
+
+            <div id="facePlaceholder" class="face-placeholder">
+              <div style="font-size: 64px; margin-bottom: 15px;">📷</div>
+              <p style="font-size: 18px; margin: 0 0 10px 0;">Reconocimiento Facial</p>
+              <p style="font-size: 14px; opacity: 0.8; margin: 0;">Haz clic en "Activar Cámara" para comenzar</p>
+            </div>
+          </div>
+
+          <!-- Instructions -->
+          <div style="background: #eff6ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #3b82f6;">
+            <p style="margin: 0; color: #1e40af; font-size: 13px;">
+              <strong>💡 Instrucciones:</strong> Asegúrate de estar en un lugar bien iluminado y mira directamente a la cámara.
+            </p>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-primary btn-block" id="startFaceLoginBtn" onclick="startFaceLogin()">
+              <span class="btn-text">📷 Activar Cámara</span>
+            </button>
+            <button type="button" class="btn btn-primary btn-block" id="verifyFaceBtn" onclick="verifyFaceLogin()" style="display: none;">
+              <span class="btn-text">🔐 Verificar Rostro</span>
+              <span class="btn-loader hidden">Verificando...</span>
+            </button>
+            <button type="button" class="btn btn-secondary btn-block" id="stopFaceLoginBtn" onclick="stopFaceLogin()" style="display: none;">
+              <span>⏹️ Detener Cámara</span>
+            </button>
+          </div>
+
+          <div id="faceErrorMessage" class="alert alert-error hidden"></div>
+          <div id="faceProcessing" style="display: none; text-align: center; padding: 20px; background: #f3f4f6; border-radius: 8px; margin-top: 15px;">
+            <div style="font-size: 36px; margin-bottom: 10px;">⏳</div>
+            <p style="font-size: 16px; font-weight: 600; color: #374151; margin: 0;">Procesando...</p>
+            <p style="font-size: 13px; color: #6b7280; margin: 5px 0 0 0;">Analizando rostro y verificando identidad</p>
+          </div>
+        </div>
+      </div>
 
       <div class="login-footer">
         <p>Sistema de Control de Asistencia v1.0</p>
@@ -59,6 +178,7 @@
   <script type="module">
     const API_BASE = 'http://localhost:8000';
 
+    // Password login elements
     const form = document.getElementById('loginForm');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
@@ -66,6 +186,151 @@
     const btnText = loginBtn.querySelector('.btn-text');
     const btnLoader = loginBtn.querySelector('.btn-loader');
     const errorMessage = document.getElementById('errorMessage');
+
+    // Face login state
+    let faceLoginStream = null;
+
+    // Switch login method
+    window.switchLoginMethod = function(method) {
+      // Stop face login camera if switching away
+      if (method === 'password' && faceLoginStream) {
+        stopFaceLogin();
+      }
+
+      // Update tabs
+      document.getElementById('passwordTab').classList.toggle('active', method === 'password');
+      document.getElementById('faceTab').classList.toggle('active', method === 'face');
+
+      // Update forms
+      document.getElementById('passwordLogin').classList.toggle('active', method === 'password');
+      document.getElementById('faceLogin').classList.toggle('active', method === 'face');
+
+      // Clear errors
+      errorMessage.classList.add('hidden');
+      document.getElementById('faceErrorMessage').classList.add('hidden');
+    };
+
+    // Start face login camera
+    window.startFaceLogin = async function() {
+      const video = document.getElementById('faceLoginVideo');
+      const placeholder = document.getElementById('facePlaceholder');
+      const startBtn = document.getElementById('startFaceLoginBtn');
+      const verifyBtn = document.getElementById('verifyFaceBtn');
+      const stopBtn = document.getElementById('stopFaceLoginBtn');
+      const errorDiv = document.getElementById('faceErrorMessage');
+
+      try {
+        faceLoginStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: 'user'
+          },
+          audio: false
+        });
+
+        video.srcObject = faceLoginStream;
+
+        placeholder.style.display = 'none';
+        video.style.display = 'block';
+
+        startBtn.style.display = 'none';
+        verifyBtn.style.display = 'block';
+        stopBtn.style.display = 'block';
+
+      } catch (error) {
+        console.error('Error accessing camera:', error);
+        errorDiv.textContent = 'Error al acceder a la cámara. Asegúrate de dar permisos.';
+        errorDiv.classList.remove('hidden');
+      }
+    };
+
+    // Stop face login camera
+    window.stopFaceLogin = function() {
+      if (faceLoginStream) {
+        faceLoginStream.getTracks().forEach(track => track.stop());
+        faceLoginStream = null;
+      }
+
+      const video = document.getElementById('faceLoginVideo');
+      const placeholder = document.getElementById('facePlaceholder');
+      const startBtn = document.getElementById('startFaceLoginBtn');
+      const verifyBtn = document.getElementById('verifyFaceBtn');
+      const stopBtn = document.getElementById('stopFaceLoginBtn');
+
+      video.style.display = 'none';
+      placeholder.style.display = 'block';
+
+      startBtn.style.display = 'block';
+      verifyBtn.style.display = 'none';
+      stopBtn.style.display = 'none';
+    };
+
+    // Verify face login
+    window.verifyFaceLogin = async function() {
+      const email = document.getElementById('faceEmail').value;
+      const video = document.getElementById('faceLoginVideo');
+      const canvas = document.getElementById('faceLoginCanvas');
+      const ctx = canvas.getContext('2d');
+      const errorDiv = document.getElementById('faceErrorMessage');
+      const processingDiv = document.getElementById('faceProcessing');
+      const verifyBtn = document.getElementById('verifyFaceBtn');
+
+      if (!email) {
+        errorDiv.textContent = 'Por favor ingresa tu correo electrónico';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      errorDiv.classList.add('hidden');
+
+      try {
+        // Capture frame
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const imageData = canvas.toDataURL('image/jpeg', 0.95);
+
+        // Show processing
+        processingDiv.style.display = 'block';
+        verifyBtn.disabled = true;
+
+        // Send to backend
+        const response = await fetch(`${API_BASE}/api/auth/login/face`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: email,
+            image_data: imageData
+          })
+        });
+
+        const data = await response.json();
+
+        processingDiv.style.display = 'none';
+        verifyBtn.disabled = false;
+
+        if (!response.ok) {
+          throw new Error(data.detail || 'Error al verificar rostro');
+        }
+
+        // Success - save token and redirect
+        localStorage.setItem('access_token', data.tokens.access_token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+
+        const isAdmin = data.user.role && data.user.role.name === 'Admin';
+        window.location.href = isAdmin ? 'index.html' : 'profile.html';
+
+      } catch (error) {
+        processingDiv.style.display = 'none';
+        verifyBtn.disabled = false;
+        errorDiv.textContent = error.message;
+        errorDiv.classList.remove('hidden');
+      }
+    };
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
