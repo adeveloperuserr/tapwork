@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Perfil - Tapwork</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2 class="sidebar-title">TAPWORK</h2>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="profile.html" class="nav-link active">
+          <span class="nav-icon">👤</span>
+          <span>Mi Perfil</span>
+        </a>
+        <a href="#" class="nav-link" onclick="showSection('password'); return false;">
+          <span class="nav-icon">🔒</span>
+          <span>Cambiar Contraseña</span>
+        </a>
+        <a href="#" class="nav-link" onclick="showSection('barcode'); return false;">
+          <span class="nav-icon">🏷️</span>
+          <span>Mi Código</span>
+        </a>
+        <a href="#" class="nav-link" onclick="showSection('attendance'); return false;">
+          <span class="nav-icon">📋</span>
+          <span>Mis Asistencias</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn btn-secondary btn-block" id="logoutBtn">Cerrar Sesión</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Header -->
+      <header class="content-header">
+        <h1>Mi Perfil</h1>
+        <div class="header-actions">
+          <div class="user-info">
+            <div class="user-avatar" id="userAvatar">U</div>
+            <span id="userName">Usuario</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Profile Section -->
+      <main class="content-body" id="profileSection">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Información Personal</h2>
+          </div>
+          <div class="card-body">
+            <div class="profile-info">
+              <div class="info-row">
+                <label>Nombre Completo:</label>
+                <span id="fullName">-</span>
+              </div>
+              <div class="info-row">
+                <label>Email:</label>
+                <span id="email">-</span>
+              </div>
+              <div class="info-row">
+                <label>ID de Empleado:</label>
+                <span id="employeeId">-</span>
+              </div>
+              <div class="info-row">
+                <label>Departamento:</label>
+                <span id="department">-</span>
+              </div>
+              <div class="info-row">
+                <label>Turno:</label>
+                <span id="shift">-</span>
+              </div>
+              <div class="info-row">
+                <label>Rol:</label>
+                <span id="role">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Change Password Section -->
+      <main class="content-body hidden" id="passwordSection">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Cambiar Contraseña</h2>
+          </div>
+          <div class="card-body">
+            <form id="passwordForm">
+              <div class="form-group">
+                <label for="currentPassword">Contraseña Actual *</label>
+                <input type="password" id="currentPassword" required>
+              </div>
+              <div class="form-group">
+                <label for="newPassword">Nueva Contraseña *</label>
+                <input type="password" id="newPassword" required minlength="8">
+                <small>Mínimo 8 caracteres, debe incluir mayúsculas, minúsculas y números</small>
+              </div>
+              <div class="form-group">
+                <label for="confirmPassword">Confirmar Nueva Contraseña *</label>
+                <input type="password" id="confirmPassword" required>
+              </div>
+              <div id="passwordError" class="alert alert-error hidden"></div>
+              <div id="passwordSuccess" class="alert alert-success hidden"></div>
+              <button type="submit" class="btn btn-primary">Actualizar Contraseña</button>
+            </form>
+          </div>
+        </div>
+      </main>
+
+      <!-- Barcode Section -->
+      <main class="content-body hidden" id="barcodeSection">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Mi Código de Barras</h2>
+          </div>
+          <div class="card-body">
+            <div class="barcode-container">
+              <canvas id="barcodeCanvas"></canvas>
+              <p class="barcode-id"></p>
+            </div>
+            <div class="barcode-actions">
+              <button class="btn btn-primary" onclick="downloadBarcode()">Descargar Código</button>
+              <button class="btn btn-secondary" onclick="resendBarcodeEmail()">Enviar a mi Email</button>
+            </div>
+            <div id="barcodeSuccess" class="alert alert-success hidden"></div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Attendance Section -->
+      <main class="content-body hidden" id="attendanceSection">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Historial de Asistencias</h2>
+          </div>
+          <div class="card-body">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Entrada</th>
+                    <th>Salida</th>
+                    <th>Horas Trabajadas</th>
+                  </tr>
+                </thead>
+                <tbody id="attendanceTable">
+                  <tr>
+                    <td colspan="4" class="text-center">Cargando...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script src="js/profile.js"></script>
+</body>
+</html>

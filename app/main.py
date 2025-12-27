@@ -9,7 +9,7 @@ from sqlalchemy import text
 
 from .config import get_settings
 from .database import Base, engine
-from .routes import admin, attendance, auth, barcodes, biometric, reports
+from .routes import admin, attendance, auth, barcodes, biometric, reports, user
 
 
 settings = get_settings()
@@ -33,6 +33,7 @@ app.include_router(barcodes.router)
 app.include_router(reports.router)
 app.include_router(biometric.router)
 app.include_router(admin.router)
+app.include_router(user.router)
 
 # Servir archivos estáticos del frontend
 app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
