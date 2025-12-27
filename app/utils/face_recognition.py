@@ -6,11 +6,23 @@ import base64
 import io
 import logging
 from typing import Tuple
-import numpy as np
-from PIL import Image
-import cv2
 
 logger = logging.getLogger(__name__)
+
+# Lazy imports - solo se cargan cuando se necesitan
+def _import_dependencies():
+    """Import heavy dependencies only when needed"""
+    try:
+        import numpy as np
+        from PIL import Image
+        import cv2
+        return np, Image, cv2
+    except ImportError as e:
+        logger.error(f"Failed to import face recognition dependencies: {e}")
+        raise ImportError(
+            "Face recognition dependencies not installed. "
+            "Run: pip install deepface opencv-python tf-keras numpy retina-face"
+        )
 
 # Configuración de DeepFace
 FACE_MODEL = "Facenet512"  # Modelo más robusto: VGG-Face, Facenet, Facenet512, OpenFace, DeepFace, DeepID, ArcFace
@@ -44,7 +56,7 @@ class LivenessCheckFailedError(FaceRecognitionError):
     pass
 
 
-def decode_base64_image(base64_string: str) -> np.ndarray:
+def decode_base64_image(base64_string: str):
     """
     Decodifica una imagen base64 a formato numpy array (BGR)
 
