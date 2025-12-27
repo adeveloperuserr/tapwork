@@ -97,6 +97,8 @@ function populateDropdowns() {
   const deptSelect = document.getElementById('departmentId');
   const shiftSelect = document.getElementById('shiftId');
 
+  console.log('Populating dropdowns:', { roles, departments, shifts });
+
   roleSelect.innerHTML = '<option value="">Seleccionar rol...</option>' +
     roles.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
 
