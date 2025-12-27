@@ -1,0 +1,20 @@
+# Forzar saltos de línea Unix (LF) en scripts de shell
+*.sh text eol=lf
+
+# Normalizar archivos de Python
+*.py text eol=lf
+
+# Archivos de texto general
+*.md text
+*.txt text
+*.json text
+*.yml text
+*.yaml text
+
+# Archivos binarios
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
