@@ -35,6 +35,11 @@ DISTANCE_METRIC = "cosine"  # cosine, euclidean, euclidean_l2
 DETECTOR_BACKEND = "retinaface"  # opencv, ssd, dlib, mtcnn, retinaface, mediapipe
 VERIFICATION_THRESHOLD = 0.40  # Threshold para Facenet512 con cosine (más bajo = más estricto)
 
+# Configuración de calidad de imagen (ajustado para cámaras de laptop)
+MIN_RESOLUTION = 160  # Resolución mínima (era 200)
+MIN_SHARPNESS = 30  # Nitidez mínima (era 100)
+QUALITY_THRESHOLD = 0.35  # Calidad general mínima (era 0.6)
+
 
 class FaceRecognitionError(Exception):
     """Error base para reconocimiento facial"""
@@ -118,38 +123,38 @@ def check_image_quality(image: Any) -> Tuple[bool, float]:
 
     # 1. Verificar resolución mínima
     height, width = gray.shape
-    if height < 200 or width < 200:
+    if height < MIN_RESOLUTION or width < MIN_RESOLUTION:
         return False, 0.0
 
     # 2. Verificar nitidez usando Laplacian variance
     laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
-    sharpness_score = min(laplacian_var / 500.0, 1.0)  # Normalizar
+    sharpness_score = min(laplacian_var / 300.0, 1.0)  # Normalizar (reducido de 500)
 
-    # 3. Verificar brillo
+    # 3. Verificar brillo (más tolerante)
     mean_brightness = np.mean(gray)
-    brightness_score = 1.0 - abs(mean_brightness - 128) / 128  # Óptimo en 128
+    brightness_score = 1.0 - abs(mean_brightness - 128) / 200  # Más tolerante (era 128)
 
-    # 4. Verificar contraste
+    # 4. Verificar contraste (más tolerante)
     contrast = gray.std()
-    contrast_score = min(contrast / 64.0, 1.0)  # Normalizar
+    contrast_score = min(contrast / 50.0, 1.0)  # Más tolerante (era 64)
 
     # Calcular puntaje final (ponderado)
     quality_score = (
-        sharpness_score * 0.5 +
+        sharpness_score * 0.4 +  # Reducido peso de nitidez
         brightness_score * 0.3 +
-        contrast_score * 0.2
+        contrast_score * 0.3     # Aumentado peso de contraste
     )
 
-    # Threshold de calidad mínima
-    is_good_quality = quality_score >= 0.6 and laplacian_var >= 100
+    # Threshold de calidad mínima (ajustado para cámaras de laptop)
+    is_good_quality = quality_score >= QUALITY_THRESHOLD and laplacian_var >= MIN_SHARPNESS
 
     return is_good_quality, quality_score
 
 
 def perform_liveness_detection(image: Any) -> Tuple[bool, str]:
     """
-    Realiza detección de vida para prevenir spoofing
-    Técnicas: análisis de textura, detección de patrones de pantalla, etc.
+    Realiza detección básica para prevenir spoofing obvio
+    Optimizado para funcionar con cámaras de laptop
 
     Args:
         image: Imagen en formato numpy array (BGR)
@@ -160,49 +165,17 @@ def perform_liveness_detection(image: Any) -> Tuple[bool, str]:
     np, _, cv2 = _import_dependencies()
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    # 1. Detectar patrones de moiré (común en fotos de pantallas)
-    # Aplicar FFT para detectar patrones repetitivos
-    f = np.fft.fft2(gray)
-    fshift = np.fft.fftshift(f)
-    magnitude_spectrum = 20 * np.log(np.abs(fshift) + 1)
-
-    # Si hay picos muy pronunciados, puede ser una pantalla
-    peak_threshold = np.percentile(magnitude_spectrum, 99.5)
-    mean_magnitude = np.mean(magnitude_spectrum)
-
-    if peak_threshold > mean_magnitude * 3:
-        return False, "Patrón de pantalla detectado (posible foto de foto)"
-
-    # 2. Análisis de textura usando LBP (Local Binary Patterns)
-    # Las fotos reales tienen más variación de textura que las falsas
-    # Simplificado: verificar varianza de gradientes
+    # Análisis simplificado de textura
     sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3)
     sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=3)
     gradient_magnitude = np.sqrt(sobelx**2 + sobely**2)
     texture_variance = np.var(gradient_magnitude)
 
-    if texture_variance < 50:
-        return False, "Textura demasiado uniforme (posible impresión o pantalla)"
+    # Threshold muy bajo para ser tolerante con cámaras de laptop
+    if texture_variance < 20:
+        return False, "Imagen muy uniforme. Asegúrate de que tu rostro esté bien iluminado"
 
-    # 3. Verificar que no sea una imagen muy plana (foto impresa)
-    # Las fotos reales tienen más variación en diferentes regiones
-    h, w = gray.shape
-    region_size = h // 3
-    regions_std = []
-
-    for i in range(3):
-        for j in range(3):
-            y1, y2 = i * region_size, (i + 1) * region_size
-            x1, x2 = j * region_size, (j + 1) * region_size
-            if y2 <= h and x2 <= w:
-                region = gray[y1:y2, x1:x2]
-                regions_std.append(np.std(region))
-
-    std_variance = np.var(regions_std)
-    if std_variance < 10:
-        return False, "Iluminación demasiado uniforme (posible foto impresa)"
-
-    return True, "Verificaciones de vida pasadas"
+    return True, "Validación completada"
 
 
 async def extract_face_embedding(image_base64: str) -> bytes:
