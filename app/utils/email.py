@@ -151,3 +151,102 @@ El equipo de Tapwork"""
     """
     return subject, email, html
 
+
+def build_admin_created_user_email(email: str, first_name: str, employee_id: str, password: str) -> tuple[str, str, str]:
+    """
+    Construye el email cuando un admin crea un usuario con sus credenciales.
+    El código de barras se envía como adjunto separado.
+    """
+    subject = f"Bienvenido a Tapwork - Tu cuenta ha sido creada"
+    body = f"""Hola {first_name},
+
+Tu cuenta en Tapwork ha sido creada por un administrador.
+
+CREDENCIALES DE ACCESO:
+Email: {email}
+Contraseña: {password}
+ID de Empleado: {employee_id}
+
+IMPORTANTE: Te recomendamos cambiar tu contraseña después del primer inicio de sesión.
+
+En este email encontrarás adjunto tu código de barras personal. Este código es único y te identifica en el sistema de asistencia.
+
+Instrucciones:
+1. Inicia sesión en el sistema con tus credenciales
+2. Guarda el código de barras adjunto en un lugar seguro
+3. Puedes imprimirlo o guardarlo en tu dispositivo móvil
+4. Usa este código para registrar tu entrada y salida en las terminales
+
+Si tienes alguna pregunta, contacta a tu supervisor.
+
+Saludos,
+El equipo de Tapwork"""
+
+    html = f"""
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+            .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+            .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+            .credentials {{ background: white; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #667eea; }}
+            .credentials-item {{ margin: 10px 0; font-family: 'Courier New', monospace; }}
+            .credentials-label {{ font-weight: bold; color: #667eea; }}
+            .warning {{ background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }}
+            .instructions {{ background: white; padding: 20px; border-left: 4px solid #667eea; margin: 20px 0; }}
+            .instructions li {{ margin: 10px 0; }}
+            .footer {{ text-align: center; margin-top: 20px; color: #666; font-size: 12px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>¡Bienvenido a Tapwork!</h1>
+            </div>
+            <div class="content">
+                <p>Hola <strong>{first_name}</strong>,</p>
+                <p>Tu cuenta en Tapwork ha sido creada por un administrador. A continuación encontrarás tus credenciales de acceso:</p>
+
+                <div class="credentials">
+                    <h3>🔑 Credenciales de Acceso</h3>
+                    <div class="credentials-item">
+                        <span class="credentials-label">Email:</span> {email}
+                    </div>
+                    <div class="credentials-item">
+                        <span class="credentials-label">Contraseña:</span> {password}
+                    </div>
+                    <div class="credentials-item">
+                        <span class="credentials-label">ID de Empleado:</span> {employee_id}
+                    </div>
+                </div>
+
+                <div class="warning">
+                    <strong>⚠️ IMPORTANTE:</strong> Te recomendamos cambiar tu contraseña después del primer inicio de sesión por seguridad.
+                </div>
+
+                <p>En este email encontrarás adjunto tu <strong>código de barras personal</strong>. Este código es único y te identifica en el sistema de asistencia.</p>
+
+                <div class="instructions">
+                    <h3>📋 Instrucciones:</h3>
+                    <ol>
+                        <li>Inicia sesión en el sistema con tus credenciales</li>
+                        <li>Guarda el código de barras adjunto en un lugar seguro</li>
+                        <li>Puedes imprimirlo o guardarlo en tu dispositivo móvil</li>
+                        <li>Usa este código para registrar tu entrada y salida en las terminales</li>
+                    </ol>
+                </div>
+
+                <p>Si tienes alguna pregunta, no dudes en contactar a tu supervisor.</p>
+
+                <p>Saludos,<br><strong>El equipo de Tapwork</strong></p>
+            </div>
+            <div class="footer">
+                <p>Este es un mensaje automático, por favor no responder.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    return subject, email, html
+
