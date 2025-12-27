@@ -206,6 +206,38 @@ class BiometricEnrollment(BaseModel):
     biometric_hash: str
 
 
+class FaceRegistrationRequest(BaseModel):
+    """Request para registrar rostro del usuario - imagen en base64"""
+    image_data: str  # Base64 encoded image
+
+
+class FaceRegistrationResponse(BaseModel):
+    """Response del registro facial exitoso"""
+    success: bool
+    message: str
+    face_detected: bool = True
+    quality_score: float | None = None
+
+
+class FaceVerificationRequest(BaseModel):
+    """Request para verificar rostro durante login"""
+    email: EmailStr
+    image_data: str  # Base64 encoded image
+
+
+class FaceVerificationResponse(BaseModel):
+    """Response de verificación facial"""
+    verified: bool
+    confidence: float | None = None
+    message: str
+
+
+class FaceLoginRequest(BaseModel):
+    """Request para login con reconocimiento facial"""
+    email: EmailStr
+    image_data: str  # Base64 encoded image
+
+
 class AuditLogOut(BaseModel):
     id: uuid.UUID
     user_id: uuid.UUID | None

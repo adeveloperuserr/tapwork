@@ -1,4 +1,6 @@
 import uuid
+import logging
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,7 +10,7 @@ from slowapi.util import get_remote_address
 
 from .. import schemas
 from ..dependencies import get_current_user
-from ..models import AuditLog, QRCode, Role, User
+from ..models import AuditLog, BiometricData, QRCode, Role, User
 from ..utils import barcode
 from ..utils.email import build_reset_email, build_verification_email, build_welcome_email, send_email
 from ..utils.security import (
@@ -18,7 +20,17 @@ from ..utils.security import (
     hash_password,
     verify_password,
 )
+from ..utils.face_recognition import (
+    verify_face,
+    NoFaceDetectedError,
+    MultipleFacesError,
+    LowQualityImageError,
+    LivenessCheckFailedError,
+    FaceRecognitionError,
+)
 from ..database import get_db
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 limiter = Limiter(key_func=get_remote_address)
@@ -109,6 +121,120 @@ async def login(request: Request, payload: schemas.LoginRequest, db: AsyncSessio
 
     tokens = schemas.AuthTokens(access_token=create_access_token(str(user.id)))
     return schemas.AuthResponse(user=user, tokens=tokens)
+
+
+@router.post("/login/face", response_model=schemas.AuthResponse)
+@limiter.limit("5/minute")
+async def login_with_face(request: Request, payload: schemas.FaceLoginRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Login usando reconocimiento facial
+    Sistema de autenticación biométrica de nivel bancario
+    """
+    try:
+        # Buscar usuario por email
+        result = await db.execute(
+            select(User)
+            .where(User.email == payload.email)
+            .options(
+                selectinload(User.role),
+                selectinload(User.department),
+                selectinload(User.shift)
+            )
+        )
+        user = result.scalar_one_or_none()
+
+        if not user:
+            logger.warning(f"Face login attempt for non-existent user: {payload.email}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Credenciales inválidas"
+            )
+
+        if not user.is_active:
+            logger.warning(f"Face login attempt for inactive user: {payload.email}")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Usuario inactivo"
+            )
+
+        # Verificar que el usuario tenga un rostro registrado
+        biometric = await db.scalar(
+            select(BiometricData).where(
+                BiometricData.user_id == user.id,
+                BiometricData.biometric_type == "face"
+            )
+        )
+
+        if not biometric:
+            logger.warning(f"Face login attempt for user without registered face: {payload.email}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No tienes un rostro registrado. Por favor registra tu rostro primero."
+            )
+
+        # Verificar el rostro
+        is_match, confidence = await verify_face(payload.image_data, biometric.biometric_hash)
+
+        if not is_match:
+            logger.warning(
+                f"Face verification failed for user {payload.email}: "
+                f"confidence={confidence:.2f}%"
+            )
+            await _log(
+                db, user.id, "FAILED_FACE_LOGIN", "auth",
+                {"confidence": confidence, "reason": "face_mismatch"},
+                ip_address=request.client.host if request.client else None
+            )
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Verificación facial fallida. El rostro no coincide."
+            )
+
+        # Actualizar timestamp de última verificación
+        biometric.last_verified_at = datetime.utcnow()
+        await db.commit()
+
+        # Login exitoso
+        logger.info(f"Successful face login for user {payload.email} (confidence: {confidence:.2f}%)")
+        await _log(
+            db, user.id, "FACE_LOGIN", "auth",
+            {"confidence": confidence, "method": "facial_recognition"},
+            ip_address=request.client.host if request.client else None
+        )
+
+        tokens = schemas.AuthTokens(access_token=create_access_token(str(user.id)))
+        return schemas.AuthResponse(user=user, tokens=tokens)
+
+    except NoFaceDetectedError as e:
+        logger.warning(f"No face detected during login for {payload.email}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except MultipleFacesError as e:
+        logger.warning(f"Multiple faces detected during login for {payload.email}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except LowQualityImageError as e:
+        logger.warning(f"Low quality image during login for {payload.email}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except LivenessCheckFailedError as e:
+        logger.warning(f"Liveness check failed during login for {payload.email}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except FaceRecognitionError as e:
+        logger.error(f"Face recognition error during login for {payload.email}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error procesando imagen: {str(e)}"
+        )
 
 
 @router.post("/verify-email")
