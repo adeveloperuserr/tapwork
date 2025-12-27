@@ -3,175 +3,261 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Tapwork Admin</title>
-  <link rel="stylesheet" href="css/admin.css">
-  <style>
-    .login-tab {
-      flex: 1;
-      padding: 12px 20px;
-      background: white;
-      border: 2px solid transparent;
-      border-radius: 8px 8px 0 0;
-      cursor: pointer;
-      transition: all 0.3s;
-      font-size: 15px;
-      font-weight: 500;
-      color: #6b7280;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+  <title>Iniciar Sesión - Tapwork</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts - Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            primary: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              300: '#93c5fd',
+              400: '#60a5fa',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
     }
-    .login-tab:hover {
-      background: #f9fafb;
-      color: #374151;
-    }
-    .login-tab.active {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border-color: transparent;
-    }
-    .login-method {
-      display: none;
-    }
-    .login-method.active {
-      display: block;
-    }
-    #faceLoginVideo {
-      width: 100%;
-      max-width: 500px;
-      border-radius: 12px;
-      background: #000;
-      margin: 20px auto;
-      display: block;
-    }
-    .face-placeholder {
-      background: #1f2937;
-      border-radius: 12px;
-      padding: 60px 20px;
-      text-align: center;
-      color: white;
-      margin: 20px 0;
-    }
-  </style>
+  </script>
 </head>
-<body class="login-page">
-  <div class="login-container">
-    <div class="login-card">
-      <div class="login-header">
-        <div class="logo">TAPWORK</div>
-        <h1>Portal de Empleados</h1>
-        <p>Ingresa tus credenciales para continuar</p>
+<body class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100 font-sans antialiased">
+
+  <!-- Main Container -->
+  <div class="min-h-screen flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+    <div class="w-full max-w-md">
+
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">TAPWORK</h1>
+        <p class="text-lg text-gray-600">Portal de Empleados</p>
       </div>
 
-      <!-- Login Method Tabs -->
-      <div style="display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">
-        <button type="button" id="passwordTab" class="login-tab active" onclick="switchLoginMethod('password')">
-          <span style="font-size: 20px; margin-right: 8px;">🔑</span>
-          <span>Contraseña</span>
-        </button>
-        <button type="button" id="faceTab" class="login-tab" onclick="switchLoginMethod('face')">
-          <span style="font-size: 20px; margin-right: 8px;">🔐</span>
-          <span>Reconocimiento Facial</span>
-        </button>
-      </div>
+      <!-- Login Card -->
+      <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
 
-      <!-- Password Login Form -->
-      <div id="passwordLogin" class="login-method active">
-        <form id="loginForm" class="login-form">
-          <div class="form-group">
-            <label for="email">Correo Electrónico</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              required
-              autocomplete="email"
-              placeholder="admin@tapwork.com"
+        <!-- Tabs -->
+        <div class="flex border-b border-gray-200">
+          <button type="button" id="passwordTab" onclick="switchLoginMethod('password')"
+                  class="flex-1 px-6 py-4 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 bg-primary-500 text-white border-b-2 border-primary-600">
+            <div class="flex items-center justify-center space-x-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+              </svg>
+              <span>Contraseña</span>
+            </div>
+          </button>
+          <button type="button" id="faceTab" onclick="switchLoginMethod('face')"
+                  class="flex-1 px-6 py-4 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 bg-white text-gray-600 hover:bg-gray-50 border-b-2 border-transparent">
+            <div class="flex items-center justify-center space-x-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+              <span>Reconocimiento Facial</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- Password Login Form -->
+        <div id="passwordLogin" class="p-8">
+          <form id="loginForm" class="space-y-6">
+            <div>
+              <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                Correo Electrónico
+              </label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
+                  </svg>
+                </div>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  required
+                  autocomplete="email"
+                  placeholder="admin@tapwork.com"
+                  class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400"
+                >
+              </div>
+            </div>
+
+            <div>
+              <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                Contraseña
+              </label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                  </svg>
+                </div>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  required
+                  autocomplete="current-password"
+                  placeholder="••••••••"
+                  class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400"
+                >
+              </div>
+            </div>
+
+            <div id="errorMessage" class="hidden bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm"></div>
+
+            <button
+              type="submit"
+              id="loginBtn"
+              class="w-full flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
-          </div>
-
-          <div class="form-group">
-            <label for="password">Contraseña</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              required
-              autocomplete="current-password"
-              placeholder="••••••••"
-            >
-          </div>
-
-          <div class="form-actions">
-            <button type="submit" class="btn btn-primary btn-block" id="loginBtn">
               <span class="btn-text">Iniciar Sesión</span>
-              <span class="btn-loader hidden">Verificando...</span>
+              <span class="btn-loader hidden flex items-center">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Verificando...
+              </span>
             </button>
-          </div>
+          </form>
+        </div>
 
-          <div id="errorMessage" class="alert alert-error hidden"></div>
-        </form>
-      </div>
+        <!-- Face Recognition Login -->
+        <div id="faceLogin" class="p-8 hidden">
+          <div class="space-y-6">
+            <div>
+              <label for="faceEmail" class="block text-sm font-medium text-gray-700 mb-2">
+                Correo Electrónico
+              </label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
+                  </svg>
+                </div>
+                <input
+                  type="email"
+                  id="faceEmail"
+                  name="faceEmail"
+                  required
+                  autocomplete="email"
+                  placeholder="tu-email@tapwork.com"
+                  class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400"
+                >
+              </div>
+            </div>
 
-      <!-- Face Recognition Login -->
-      <div id="faceLogin" class="login-method">
-        <div class="login-form">
-          <div class="form-group">
-            <label for="faceEmail">Correo Electrónico</label>
-            <input
-              type="email"
-              id="faceEmail"
-              name="faceEmail"
-              required
-              autocomplete="email"
-              placeholder="tu-email@tapwork.com"
-            >
-          </div>
+            <!-- Camera Section -->
+            <div class="relative">
+              <video id="faceLoginVideo" width="640" height="480" autoplay class="hidden w-full rounded-lg shadow-inner bg-black"></video>
+              <canvas id="faceLoginCanvas" class="hidden"></canvas>
 
-          <!-- Camera Section -->
-          <div style="margin: 25px 0;">
-            <video id="faceLoginVideo" width="640" height="480" autoplay style="display: none;"></video>
-            <canvas id="faceLoginCanvas" style="display: none;"></canvas>
+              <div id="facePlaceholder" class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-12 text-center">
+                <svg class="w-20 h-20 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <p class="text-white text-lg font-medium mb-2">Reconocimiento Facial</p>
+                <p class="text-gray-400 text-sm">Haz clic en "Activar Cámara" para comenzar</p>
+              </div>
+            </div>
 
-            <div id="facePlaceholder" class="face-placeholder">
-              <div style="font-size: 64px; margin-bottom: 15px;">📷</div>
-              <p style="font-size: 18px; margin: 0 0 10px 0;">Reconocimiento Facial</p>
-              <p style="font-size: 14px; opacity: 0.8; margin: 0;">Haz clic en "Activar Cámara" para comenzar</p>
+            <!-- Instructions -->
+            <div class="bg-blue-50 border-l-4 border-primary-500 p-4 rounded">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  <svg class="h-5 w-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm text-primary-800">
+                    <strong class="font-medium">Instrucciones:</strong> Asegúrate de estar en un lugar bien iluminado y mira directamente a la cámara.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div id="faceErrorMessage" class="hidden bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm"></div>
+
+            <div id="faceProcessing" class="hidden bg-gray-50 rounded-lg p-6 text-center">
+              <svg class="animate-spin h-10 w-10 text-primary-600 mx-auto mb-3" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <p class="text-gray-900 font-semibold mb-1">Procesando...</p>
+              <p class="text-gray-600 text-sm">Analizando rostro y verificando identidad</p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="space-y-3">
+              <button
+                type="button"
+                id="startFaceLoginBtn"
+                onclick="startFaceLogin()"
+                class="w-full flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Activar Cámara
+              </button>
+
+              <button
+                type="button"
+                id="verifyFaceBtn"
+                onclick="verifyFaceLogin()"
+                class="hidden w-full flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Verificar Rostro
+              </button>
+
+              <button
+                type="button"
+                id="stopFaceLoginBtn"
+                onclick="stopFaceLogin()"
+                class="hidden w-full flex justify-center items-center px-4 py-3 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200"
+              >
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+                Detener Cámara
+              </button>
             </div>
           </div>
-
-          <!-- Instructions -->
-          <div style="background: #eff6ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #3b82f6;">
-            <p style="margin: 0; color: #1e40af; font-size: 13px;">
-              <strong>💡 Instrucciones:</strong> Asegúrate de estar en un lugar bien iluminado y mira directamente a la cámara.
-            </p>
-          </div>
-
-          <div class="form-actions">
-            <button type="button" class="btn btn-primary btn-block" id="startFaceLoginBtn" onclick="startFaceLogin()">
-              <span class="btn-text">📷 Activar Cámara</span>
-            </button>
-            <button type="button" class="btn btn-primary btn-block" id="verifyFaceBtn" onclick="verifyFaceLogin()" style="display: none;">
-              <span class="btn-text">🔐 Verificar Rostro</span>
-              <span class="btn-loader hidden">Verificando...</span>
-            </button>
-            <button type="button" class="btn btn-secondary btn-block" id="stopFaceLoginBtn" onclick="stopFaceLogin()" style="display: none;">
-              <span>⏹️ Detener Cámara</span>
-            </button>
-          </div>
-
-          <div id="faceErrorMessage" class="alert alert-error hidden"></div>
-          <div id="faceProcessing" style="display: none; text-align: center; padding: 20px; background: #f3f4f6; border-radius: 8px; margin-top: 15px;">
-            <div style="font-size: 36px; margin-bottom: 10px;">⏳</div>
-            <p style="font-size: 16px; font-weight: 600; color: #374151; margin: 0;">Procesando...</p>
-            <p style="font-size: 13px; color: #6b7280; margin: 5px 0 0 0;">Analizando rostro y verificando identidad</p>
-          </div>
         </div>
+
       </div>
 
-      <div class="login-footer">
-        <p>Sistema de Control de Asistencia v1.0</p>
+      <!-- Footer -->
+      <div class="text-center mt-8">
+        <p class="text-sm text-gray-600">Sistema de Control de Asistencia v1.0</p>
       </div>
+
     </div>
   </div>
 
@@ -187,6 +273,12 @@
     const btnLoader = loginBtn.querySelector('.btn-loader');
     const errorMessage = document.getElementById('errorMessage');
 
+    // Tab elements
+    const passwordTab = document.getElementById('passwordTab');
+    const faceTab = document.getElementById('faceTab');
+    const passwordLogin = document.getElementById('passwordLogin');
+    const faceLogin = document.getElementById('faceLogin');
+
     // Face login state
     let faceLoginStream = null;
 
@@ -197,13 +289,25 @@
         stopFaceLogin();
       }
 
-      // Update tabs
-      document.getElementById('passwordTab').classList.toggle('active', method === 'password');
-      document.getElementById('faceTab').classList.toggle('active', method === 'face');
+      if (method === 'password') {
+        // Password tab active
+        passwordTab.classList.remove('bg-white', 'text-gray-600', 'hover:bg-gray-50', 'border-transparent');
+        passwordTab.classList.add('bg-primary-500', 'text-white', 'border-primary-600');
+        faceTab.classList.remove('bg-primary-500', 'text-white', 'border-primary-600');
+        faceTab.classList.add('bg-white', 'text-gray-600', 'hover:bg-gray-50', 'border-transparent');
 
-      // Update forms
-      document.getElementById('passwordLogin').classList.toggle('active', method === 'password');
-      document.getElementById('faceLogin').classList.toggle('active', method === 'face');
+        passwordLogin.classList.remove('hidden');
+        faceLogin.classList.add('hidden');
+      } else {
+        // Face tab active
+        faceTab.classList.remove('bg-white', 'text-gray-600', 'hover:bg-gray-50', 'border-transparent');
+        faceTab.classList.add('bg-primary-500', 'text-white', 'border-primary-600');
+        passwordTab.classList.remove('bg-primary-500', 'text-white', 'border-primary-600');
+        passwordTab.classList.add('bg-white', 'text-gray-600', 'hover:bg-gray-50', 'border-transparent');
+
+        faceLogin.classList.remove('hidden');
+        passwordLogin.classList.add('hidden');
+      }
 
       // Clear errors
       errorMessage.classList.add('hidden');
@@ -231,12 +335,12 @@
 
         video.srcObject = faceLoginStream;
 
-        placeholder.style.display = 'none';
-        video.style.display = 'block';
+        placeholder.classList.add('hidden');
+        video.classList.remove('hidden');
 
-        startBtn.style.display = 'none';
-        verifyBtn.style.display = 'block';
-        stopBtn.style.display = 'block';
+        startBtn.classList.add('hidden');
+        verifyBtn.classList.remove('hidden');
+        stopBtn.classList.remove('hidden');
 
       } catch (error) {
         console.error('Error accessing camera:', error);
@@ -258,12 +362,12 @@
       const verifyBtn = document.getElementById('verifyFaceBtn');
       const stopBtn = document.getElementById('stopFaceLoginBtn');
 
-      video.style.display = 'none';
-      placeholder.style.display = 'block';
+      video.classList.add('hidden');
+      placeholder.classList.remove('hidden');
 
-      startBtn.style.display = 'block';
-      verifyBtn.style.display = 'none';
-      stopBtn.style.display = 'none';
+      startBtn.classList.remove('hidden');
+      verifyBtn.classList.add('hidden');
+      stopBtn.classList.add('hidden');
     };
 
     // Verify face login
@@ -293,7 +397,7 @@
         const imageData = canvas.toDataURL('image/jpeg', 0.95);
 
         // Show processing
-        processingDiv.style.display = 'block';
+        processingDiv.classList.remove('hidden');
         verifyBtn.disabled = true;
 
         // Send to backend
@@ -310,7 +414,7 @@
 
         const data = await response.json();
 
-        processingDiv.style.display = 'none';
+        processingDiv.classList.add('hidden');
         verifyBtn.disabled = false;
 
         if (!response.ok) {
@@ -325,13 +429,14 @@
         window.location.href = isAdmin ? 'index.html' : 'profile.html';
 
       } catch (error) {
-        processingDiv.style.display = 'none';
+        processingDiv.classList.add('hidden');
         verifyBtn.disabled = false;
         errorDiv.textContent = error.message;
         errorDiv.classList.remove('hidden');
       }
     };
 
+    // Password login form submission
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
