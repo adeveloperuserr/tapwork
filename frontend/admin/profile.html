@@ -4,520 +4,461 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mi Perfil - Tapwork</title>
-  <link rel="stylesheet" href="css/admin.css">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts - Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            primary: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              300: '#93c5fd',
+              400: '#60a5fa',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
   <style>
-    .profile-container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 40px 20px;
-    }
-
-    .profile-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 40px;
-      border-radius: 20px;
-      margin-bottom: 30px;
-      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-    }
-
-    .profile-header-content {
-      display: flex;
-      align-items: center;
-      gap: 30px;
-    }
-
-    .profile-avatar-large {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 48px;
-      font-weight: bold;
-      border: 4px solid white;
-    }
-
-    .profile-header-info h1 {
-      margin: 0 0 10px 0;
-      font-size: 32px;
-    }
-
-    .profile-header-info p {
-      margin: 5px 0;
-      opacity: 0.9;
-      font-size: 16px;
-    }
-
-    .profile-nav {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 30px;
-      flex-wrap: wrap;
-    }
-
-    .profile-nav-btn {
-      flex: 1;
-      min-width: 200px;
-      padding: 20px;
-      background: white;
-      border: 2px solid #e5e7eb;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      font-size: 16px;
-      font-weight: 500;
-    }
-
-    .profile-nav-btn:hover {
-      border-color: #667eea;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
-    }
-
-    .profile-nav-btn.active {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border-color: transparent;
-    }
-
-    .profile-nav-icon {
-      font-size: 24px;
-    }
-
-    .section-content {
-      background: white;
-      border-radius: 20px;
-      padding: 40px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    }
-
-    .section-title {
-      font-size: 24px;
-      font-weight: 600;
-      margin-bottom: 30px;
-      color: #1f2937;
-    }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-    }
-
-    .info-card {
-      background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-      padding: 25px;
-      border-radius: 12px;
-      border-left: 4px solid #667eea;
-    }
-
-    .info-label {
-      font-size: 12px;
-      text-transform: uppercase;
-      color: #6b7280;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .info-value {
-      font-size: 18px;
-      color: #1f2937;
-      font-weight: 500;
-    }
-
-    .form-modern {
-      max-width: 600px;
-    }
-
-    .form-group-modern {
-      margin-bottom: 25px;
-    }
-
-    .form-group-modern label {
-      display: block;
-      font-weight: 600;
-      color: #374151;
-      margin-bottom: 8px;
-      font-size: 14px;
-    }
-
-    .form-group-modern input {
-      width: 100%;
-      padding: 14px;
-      border: 2px solid #e5e7eb;
-      border-radius: 10px;
-      font-size: 16px;
-      transition: all 0.3s;
-    }
-
-    .form-group-modern input:focus {
-      border-color: #667eea;
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-    .form-group-modern small {
-      display: block;
-      margin-top: 6px;
-      color: #6b7280;
-      font-size: 13px;
-    }
-
-    .btn-modern {
-      padding: 14px 32px;
-      font-size: 16px;
-      font-weight: 600;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-
-    .btn-primary-modern {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-    }
-
-    .btn-primary-modern:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    }
-
-    .btn-secondary-modern {
-      background: #f3f4f6;
-      color: #374151;
-    }
-
-    .btn-secondary-modern:hover {
-      background: #e5e7eb;
-    }
-
-    .barcode-display {
-      background: white;
-      padding: 40px;
-      border-radius: 15px;
-      text-align: center;
-      border: 2px dashed #e5e7eb;
-      margin-bottom: 30px;
-    }
-
-    .barcode-display canvas {
-      margin: 20px 0;
-    }
-
-    .barcode-employee-id {
-      font-size: 24px;
-      font-weight: 700;
-      color: #667eea;
-      margin-top: 15px;
-    }
-
-    .action-buttons {
-      display: flex;
-      gap: 15px;
-      justify-content: center;
-      margin-top: 30px;
-    }
-
-    .attendance-table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-    }
-
-    .attendance-table thead {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-    }
-
-    .attendance-table th {
-      padding: 15px;
-      text-align: left;
-      font-weight: 600;
-      font-size: 14px;
-      text-transform: uppercase;
-    }
-
-    .attendance-table th:first-child {
-      border-radius: 10px 0 0 0;
-    }
-
-    .attendance-table th:last-child {
-      border-radius: 0 10px 0 0;
-    }
-
-    .attendance-table td {
-      padding: 15px;
-      border-bottom: 1px solid #e5e7eb;
-    }
-
-    .attendance-table tbody tr:hover {
-      background: #f9fafb;
-    }
-
-    .logout-section {
-      margin-top: 40px;
-      text-align: center;
-      padding: 30px;
-      background: #f9fafb;
-      border-radius: 15px;
-    }
-
-    .alert-modern {
-      padding: 15px 20px;
-      border-radius: 10px;
-      margin: 20px 0;
-      font-size: 14px;
-    }
-
-    .alert-success-modern {
-      background: #d1fae5;
-      color: #065f46;
-      border-left: 4px solid #10b981;
-    }
-
-    .alert-error-modern {
-      background: #fee2e2;
-      color: #991b1b;
-      border-left: 4px solid #ef4444;
-    }
-
     .section-hidden {
-      display: none;
+      display: none !important;
     }
   </style>
 </head>
-<body style="background: #f3f4f6; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
-  <div class="profile-container">
+<body class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100 font-sans antialiased">
+
+  <div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+
     <!-- Header -->
-    <div class="profile-header">
-      <div class="profile-header-content">
-        <div class="profile-avatar-large" id="headerAvatar">U</div>
-        <div class="profile-header-info">
-          <h1 id="headerName">Cargando...</h1>
-          <p id="headerEmail">-</p>
-          <p><strong>ID:</strong> <span id="headerEmployeeId">-</span></p>
+    <div class="bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl shadow-xl p-8 mb-8">
+      <div class="flex items-center space-x-6">
+        <div id="headerAvatar" class="w-24 h-24 rounded-full bg-white bg-opacity-20 backdrop-blur-sm flex items-center justify-center text-4xl font-bold text-white border-4 border-white shadow-lg">
+          U
+        </div>
+        <div class="flex-1 text-white">
+          <h1 id="headerName" class="text-3xl font-bold mb-2">Cargando...</h1>
+          <p id="headerEmail" class="text-blue-100 mb-1">-</p>
+          <p class="text-blue-100">ID: <span id="headerEmployeeId" class="font-semibold">-</span></p>
         </div>
       </div>
     </div>
 
     <!-- Navigation -->
-    <div class="profile-nav">
-      <button class="profile-nav-btn active" onclick="showSection('profile')">
-        <span class="profile-nav-icon">👤</span>
-        <span>Mi Perfil</span>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+      <button onclick="showSection('profile')" class="profile-nav-btn group bg-white hover:bg-primary-50 rounded-xl p-6 transition-all duration-200 border-2 border-transparent hover:border-primary-500 hover:shadow-lg active">
+        <div class="flex items-center space-x-4">
+          <svg class="w-8 h-8 text-gray-600 group-hover:text-primary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+          <span class="font-medium text-gray-700 group-hover:text-primary-700">Mi Perfil</span>
+        </div>
       </button>
-      <button class="profile-nav-btn" onclick="showSection('password')">
-        <span class="profile-nav-icon">🔒</span>
-        <span>Cambiar Contraseña</span>
+
+      <button onclick="showSection('password')" class="profile-nav-btn group bg-white hover:bg-primary-50 rounded-xl p-6 transition-all duration-200 border-2 border-transparent hover:border-primary-500 hover:shadow-lg">
+        <div class="flex items-center space-x-4">
+          <svg class="w-8 h-8 text-gray-600 group-hover:text-primary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+          </svg>
+          <span class="font-medium text-gray-700 group-hover:text-primary-700">Contraseña</span>
+        </div>
       </button>
-      <button class="profile-nav-btn" onclick="showSection('face')">
-        <span class="profile-nav-icon">🔐</span>
-        <span>Reconocimiento Facial</span>
+
+      <button onclick="showSection('face')" class="profile-nav-btn group bg-white hover:bg-primary-50 rounded-xl p-6 transition-all duration-200 border-2 border-transparent hover:border-primary-500 hover:shadow-lg">
+        <div class="flex items-center space-x-4">
+          <svg class="w-8 h-8 text-gray-600 group-hover:text-primary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+          <span class="font-medium text-gray-700 group-hover:text-primary-700">Facial</span>
+        </div>
       </button>
-      <button class="profile-nav-btn" onclick="showSection('barcode')">
-        <span class="profile-nav-icon">📱</span>
-        <span>Mi Código</span>
+
+      <button onclick="showSection('barcode')" class="profile-nav-btn group bg-white hover:bg-primary-50 rounded-xl p-6 transition-all duration-200 border-2 border-transparent hover:border-primary-500 hover:shadow-lg">
+        <div class="flex items-center space-x-4">
+          <svg class="w-8 h-8 text-gray-600 group-hover:text-primary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+          </svg>
+          <span class="font-medium text-gray-700 group-hover:text-primary-700">Mi Código</span>
+        </div>
       </button>
-      <button class="profile-nav-btn" onclick="showSection('attendance')">
-        <span class="profile-nav-icon">📊</span>
-        <span>Mis Asistencias</span>
+
+      <button onclick="showSection('attendance')" class="profile-nav-btn group bg-white hover:bg-primary-50 rounded-xl p-6 transition-all duration-200 border-2 border-transparent hover:border-primary-500 hover:shadow-lg">
+        <div class="flex items-center space-x-4">
+          <svg class="w-8 h-8 text-gray-600 group-hover:text-primary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          <span class="font-medium text-gray-700 group-hover:text-primary-700">Asistencias</span>
+        </div>
       </button>
     </div>
 
     <!-- Profile Section -->
-    <div id="profileSection" class="section-content">
-      <h2 class="section-title">Información Personal</h2>
-      <div class="info-grid">
-        <div class="info-card">
-          <div class="info-label">Nombre Completo</div>
-          <div class="info-value" id="fullName">-</div>
+    <div id="profileSection" class="bg-white rounded-2xl shadow-lg p-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+        <svg class="w-8 h-8 mr-3 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+        </svg>
+        Información Personal
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border-l-4 border-primary-500">
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Nombre Completo</p>
+          <p id="fullName" class="text-lg font-semibold text-gray-900">-</p>
         </div>
-        <div class="info-card">
-          <div class="info-label">Email</div>
-          <div class="info-value" id="email">-</div>
+        <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border-l-4 border-primary-500">
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Email</p>
+          <p id="email" class="text-lg font-semibold text-gray-900">-</p>
         </div>
-        <div class="info-card">
-          <div class="info-label">ID de Empleado</div>
-          <div class="info-value" id="employeeId">-</div>
+        <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border-l-4 border-primary-500">
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">ID de Empleado</p>
+          <p id="employeeId" class="text-lg font-semibold text-gray-900">-</p>
         </div>
-        <div class="info-card">
-          <div class="info-label">Departamento</div>
-          <div class="info-value" id="department">-</div>
+        <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border-l-4 border-primary-500">
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Departamento</p>
+          <p id="department" class="text-lg font-semibold text-gray-900">-</p>
         </div>
-        <div class="info-card">
-          <div class="info-label">Turno</div>
-          <div class="info-value" id="shift">-</div>
+        <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border-l-4 border-primary-500">
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Turno</p>
+          <p id="shift" class="text-lg font-semibold text-gray-900">-</p>
         </div>
-        <div class="info-card">
-          <div class="info-label">Rol</div>
-          <div class="info-value" id="role">-</div>
+        <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border-l-4 border-primary-500">
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Rol</p>
+          <p id="role" class="text-lg font-semibold text-gray-900">-</p>
         </div>
       </div>
     </div>
 
     <!-- Password Section -->
-    <div id="passwordSection" class="section-content section-hidden">
-      <h2 class="section-title">Cambiar Contraseña</h2>
-      <form id="passwordForm" class="form-modern">
-        <div class="form-group-modern">
-          <label for="currentPassword">Contraseña Actual *</label>
-          <input type="password" id="currentPassword" required>
+    <div id="passwordSection" class="bg-white rounded-2xl shadow-lg p-8 section-hidden">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+        <svg class="w-8 h-8 mr-3 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+        </svg>
+        Cambiar Contraseña
+      </h2>
+      <form id="passwordForm" class="max-w-xl space-y-6">
+        <div>
+          <label for="currentPassword" class="block text-sm font-semibold text-gray-700 mb-2">
+            Contraseña Actual *
+          </label>
+          <input
+            type="password"
+            id="currentPassword"
+            required
+            class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-gray-900"
+          >
         </div>
-        <div class="form-group-modern">
-          <label for="newPassword">Nueva Contraseña *</label>
-          <input type="password" id="newPassword" required minlength="8">
-          <small>Mínimo 8 caracteres, debe incluir mayúsculas, minúsculas y números</small>
+        <div>
+          <label for="newPassword" class="block text-sm font-semibold text-gray-700 mb-2">
+            Nueva Contraseña *
+          </label>
+          <input
+            type="password"
+            id="newPassword"
+            required
+            minlength="8"
+            class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-gray-900"
+          >
+          <p class="mt-2 text-sm text-gray-600">Mínimo 8 caracteres, debe incluir mayúsculas, minúsculas y números</p>
         </div>
-        <div class="form-group-modern">
-          <label for="confirmPassword">Confirmar Nueva Contraseña *</label>
-          <input type="password" id="confirmPassword" required>
+        <div>
+          <label for="confirmPassword" class="block text-sm font-semibold text-gray-700 mb-2">
+            Confirmar Nueva Contraseña *
+          </label>
+          <input
+            type="password"
+            id="confirmPassword"
+            required
+            class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-gray-900"
+          >
         </div>
-        <div id="passwordError" class="alert-error-modern alert-modern hidden"></div>
-        <div id="passwordSuccess" class="alert-success-modern alert-modern hidden"></div>
-        <button type="submit" class="btn-modern btn-primary-modern">Actualizar Contraseña</button>
+        <div id="passwordError" class="hidden bg-red-50 border-l-4 border-red-500 text-red-800 px-4 py-3 rounded-lg text-sm"></div>
+        <div id="passwordSuccess" class="hidden bg-green-50 border-l-4 border-green-500 text-green-800 px-4 py-3 rounded-lg text-sm"></div>
+        <button
+          type="submit"
+          class="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+        >
+          Actualizar Contraseña
+        </button>
       </form>
     </div>
 
     <!-- Face Recognition Section -->
-    <div id="faceSection" class="section-content section-hidden">
-      <h2 class="section-title">🔐 Reconocimiento Facial</h2>
-      <p style="color: #6b7280; margin-bottom: 30px;">
-        Registra tu rostro para acceder de forma rápida y segura al sistema.
-        Una vez registrado, podrás iniciar sesión usando reconocimiento facial.
+    <div id="faceSection" class="bg-white rounded-2xl shadow-lg p-8 section-hidden">
+      <h2 class="text-2xl font-bold text-gray-900 mb-2 flex items-center">
+        <svg class="w-8 h-8 mr-3 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+        Reconocimiento Facial
+      </h2>
+      <p class="text-gray-600 mb-8">
+        Registra tu rostro para acceder de forma rápida y segura al sistema. Una vez registrado, podrás iniciar sesión usando reconocimiento facial.
       </p>
 
       <!-- Status Card -->
-      <div id="faceStatusCard" class="info-card" style="margin-bottom: 30px; padding: 25px;">
-        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-          <span id="faceStatusIcon" style="font-size: 48px;">🔒</span>
-          <div style="flex: 1;">
-            <div class="info-label">Estado del Registro Facial</div>
-            <div class="info-value" id="faceStatus" style="font-size: 20px;">Cargando...</div>
+      <div id="faceStatusCard" class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border-l-4 border-primary-500 mb-8">
+        <div class="flex items-center space-x-4 mb-4">
+          <div id="faceStatusIcon" class="text-6xl">
+            <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Estado del Registro Facial</p>
+            <p id="faceStatus" class="text-xl font-bold text-gray-900">Cargando...</p>
           </div>
         </div>
-        <div id="faceStatusDetails" style="color: #6b7280; font-size: 14px; display: none;">
-          <p style="margin: 5px 0;"><strong>Registrado:</strong> <span id="faceEnrolledAt">-</span></p>
-          <p style="margin: 5px 0;"><strong>Última verificación:</strong> <span id="faceLastVerified">-</span></p>
+        <div id="faceStatusDetails" class="hidden text-sm text-gray-600 space-y-1">
+          <p><strong>Registrado:</strong> <span id="faceEnrolledAt">-</span></p>
+          <p><strong>Última verificación:</strong> <span id="faceLastVerified">-</span></p>
         </div>
       </div>
 
       <!-- Camera Section -->
-      <div id="faceCameraSection" style="margin-bottom: 30px;">
-        <div style="background: #1f2937; border-radius: 15px; padding: 30px; text-align: center; position: relative;">
-          <video id="faceVideo" width="640" height="480" autoplay style="border-radius: 10px; max-width: 100%; display: none; background: #000;"></video>
-          <canvas id="faceCanvas" width="640" height="480" style="border-radius: 10px; max-width: 100%; display: none;"></canvas>
+      <div class="mb-8">
+        <div class="relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-8">
+          <video id="faceVideo" width="640" height="480" autoplay class="hidden w-full rounded-lg shadow-inner bg-black max-w-2xl mx-auto"></video>
+          <canvas id="faceCanvas" width="640" height="480" class="hidden"></canvas>
 
-          <div id="facePlaceholder" style="min-height: 400px; display: flex; align-items: center; justify-content: center; flex-direction: column; color: white;">
-            <span style="font-size: 64px; margin-bottom: 20px;">📷</span>
-            <p style="font-size: 18px; margin: 0;">Haz clic en "Activar Cámara" para comenzar</p>
+          <div id="facePlaceholder" class="min-h-96 flex flex-col items-center justify-center text-white py-16">
+            <svg class="w-24 h-24 text-gray-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <p class="text-lg font-medium">Haz clic en "Activar Cámara" para comenzar</p>
           </div>
 
           <!-- Face Detection Overlay -->
-          <div id="faceOverlay" style="position: absolute; top: 30px; left: 30px; right: 30px; bottom: 30px; border: 3px solid #10b981; border-radius: 10px; display: none; pointer-events: none;">
-            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(16, 185, 129, 0.9); color: white; padding: 15px 30px; border-radius: 10px; font-weight: 600; font-size: 16px;">
-              ✓ Rostro Detectado
+          <div id="faceOverlay" class="hidden absolute inset-8 border-4 border-green-500 rounded-xl pointer-events-none">
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-500 text-white px-6 py-3 rounded-lg font-semibold shadow-lg">
+              <svg class="w-6 h-6 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              Rostro Detectado
             </div>
           </div>
         </div>
 
         <!-- Instructions -->
-        <div style="margin-top: 20px; padding: 20px; background: #eff6ff; border-radius: 10px; border-left: 4px solid #3b82f6;">
-          <h4 style="margin: 0 0 10px 0; color: #1e40af; font-size: 16px;">📋 Instrucciones para un registro exitoso:</h4>
-          <ul style="margin: 0; padding-left: 20px; color: #1e40af; font-size: 14px;">
-            <li>Asegúrate de estar en un lugar bien iluminado</li>
-            <li>Mira directamente a la cámara</li>
-            <li>Mantén tu rostro centrado en el recuadro</li>
-            <li>Evita usar gafas de sol o cubrir tu rostro</li>
-            <li>Mantente quieto durante la captura</li>
-          </ul>
+        <div class="mt-6 bg-blue-50 border-l-4 border-primary-500 rounded-lg p-4">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-6 w-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <div class="ml-3">
+              <h4 class="text-sm font-semibold text-primary-900 mb-2">Instrucciones para un registro exitoso:</h4>
+              <ul class="text-sm text-primary-800 space-y-1 list-disc list-inside">
+                <li>Asegúrate de estar en un lugar bien iluminado</li>
+                <li>Mira directamente a la cámara</li>
+                <li>Mantén tu rostro centrado en el recuadro</li>
+                <li>Evita usar gafas de sol o cubrir tu rostro</li>
+                <li>Mantente quieto durante la captura</li>
+              </ul>
+            </div>
+          </div>
         </div>
 
         <!-- Security Info -->
-        <div style="margin-top: 15px; padding: 15px; background: #fef3c7; border-radius: 10px; border-left: 4px solid #f59e0b;">
-          <p style="margin: 0; color: #92400e; font-size: 13px;">
-            <strong>🔒 Información de Seguridad:</strong> Tu información facial se almacena de forma segura y encriptada.
-            El sistema incluye validaciones de calidad de imagen para un registro óptimo.
-          </p>
+        <div class="mt-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-4">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-6 w-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm text-yellow-800">
+                <strong>Información de Seguridad:</strong> Tu información facial se almacena de forma segura y encriptada. El sistema incluye validaciones de calidad de imagen para un registro óptimo.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Action Buttons -->
-      <div class="action-buttons" style="margin-bottom: 20px;">
-        <button id="startCameraBtn" class="btn-modern btn-primary-modern" onclick="startCamera()">
-          📷 Activar Cámara
+      <div class="flex flex-wrap gap-4 mb-6">
+        <button id="startCameraBtn" onclick="startCamera()" class="flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-sm hover:shadow-md">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          Activar Cámara
         </button>
-        <button id="captureFaceBtn" class="btn-modern btn-primary-modern" onclick="captureFace()" style="display: none;">
-          📸 Capturar Rostro
+        <button id="captureFaceBtn" onclick="captureFace()" class="hidden flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-sm hover:shadow-md">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          Capturar Rostro
         </button>
-        <button id="stopCameraBtn" class="btn-modern btn-secondary-modern" onclick="stopCamera()" style="display: none;">
-          ⏹️ Detener Cámara
+        <button id="stopCameraBtn" onclick="stopCamera()" class="hidden flex items-center px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-all duration-200">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+          Detener Cámara
         </button>
-        <button id="deleteFaceBtn" class="btn-modern btn-secondary-modern" onclick="deleteFaceRegistration()" style="display: none;">
-          🗑️ Eliminar Registro
+        <button id="deleteFaceBtn" onclick="deleteFaceRegistration()" class="hidden flex items-center px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all duration-200">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          Eliminar Registro
         </button>
       </div>
 
       <!-- Messages -->
-      <div id="faceError" class="alert-error-modern alert-modern hidden"></div>
-      <div id="faceSuccess" class="alert-success-modern alert-modern hidden"></div>
+      <div id="faceError" class="hidden bg-red-50 border-l-4 border-red-500 text-red-800 px-4 py-3 rounded-lg text-sm mb-4"></div>
+      <div id="faceSuccess" class="hidden bg-green-50 border-l-4 border-green-500 text-green-800 px-4 py-3 rounded-lg text-sm mb-4"></div>
 
       <!-- Processing Indicator -->
-      <div id="faceProcessing" style="display: none; text-align: center; padding: 30px; background: #f3f4f6; border-radius: 15px; margin-top: 20px;">
-        <div style="font-size: 48px; margin-bottom: 15px;">⏳</div>
-        <p style="font-size: 18px; font-weight: 600; color: #374151; margin: 0;">Procesando imagen...</p>
-        <p style="font-size: 14px; color: #6b7280; margin: 10px 0 0 0;">Analizando calidad, detección de vida y extrayendo características faciales</p>
+      <div id="faceProcessing" class="hidden bg-gray-50 rounded-xl p-8 text-center">
+        <svg class="animate-spin h-12 w-12 text-primary-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="text-lg font-semibold text-gray-900 mb-2">Procesando imagen...</p>
+        <p class="text-sm text-gray-600">Analizando calidad, detección de vida y extrayendo características faciales</p>
       </div>
     </div>
 
     <!-- Barcode Section -->
-    <div id="barcodeSection" class="section-content section-hidden">
-      <h2 class="section-title">Mi Código de Barras</h2>
-      <div class="barcode-display">
-        <p style="color: #6b7280; margin-bottom: 10px;">Tu código personal para registro de asistencia</p>
-        <canvas id="barcodeCanvas"></canvas>
-        <div class="barcode-employee-id" id="barcodeEmployeeId">-</div>
+    <div id="barcodeSection" class="bg-white rounded-2xl shadow-lg p-8 section-hidden">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+        <svg class="w-8 h-8 mr-3 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+        </svg>
+        Mi Código de Barras
+      </h2>
+      <div class="bg-white rounded-xl p-8 text-center border-2 border-dashed border-gray-300 mb-6">
+        <p class="text-gray-600 mb-6">Tu código personal para registro de asistencia</p>
+        <canvas id="barcodeCanvas" class="mx-auto"></canvas>
+        <div id="barcodeEmployeeId" class="text-3xl font-bold text-primary-600 mt-6">-</div>
       </div>
-      <div class="action-buttons">
-        <button class="btn-modern btn-primary-modern" onclick="downloadBarcode()">📥 Descargar Código</button>
-        <button class="btn-modern btn-secondary-modern" onclick="resendBarcodeEmail()">📧 Enviar a mi Email</button>
+      <div class="flex flex-wrap gap-4 justify-center">
+        <button onclick="downloadBarcode()" class="flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-sm hover:shadow-md">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Descargar Código
+        </button>
+        <button onclick="resendBarcodeEmail()" class="flex items-center px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-all duration-200">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+          Enviar a mi Email
+        </button>
       </div>
-      <div id="barcodeSuccess" class="alert-success-modern alert-modern hidden"></div>
+      <div id="barcodeSuccess" class="hidden bg-green-50 border-l-4 border-green-500 text-green-800 px-4 py-3 rounded-lg text-sm mt-6"></div>
     </div>
 
     <!-- Attendance Section -->
-    <div id="attendanceSection" class="section-content section-hidden">
-      <h2 class="section-title">Historial de Asistencias (Últimos 30 días)</h2>
-      <table class="attendance-table">
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Hora Entrada</th>
-            <th>Hora Salida</th>
-            <th>Horas Trabajadas</th>
-          </tr>
-        </thead>
-        <tbody id="attendanceTable">
-          <tr>
-            <td colspan="4" style="text-align: center; padding: 40px; color: #6b7280;">Cargando...</td>
-          </tr>
-        </tbody>
-      </table>
+    <div id="attendanceSection" class="bg-white rounded-2xl shadow-lg p-8 section-hidden">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+        <svg class="w-8 h-8 mr-3 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        Historial de Asistencias (Últimos 30 días)
+      </h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gradient-to-r from-primary-600 to-primary-700">
+            <tr>
+              <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                Fecha
+              </th>
+              <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                Hora Entrada
+              </th>
+              <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                Hora Salida
+              </th>
+              <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                Horas Trabajadas
+              </th>
+            </tr>
+          </thead>
+          <tbody id="attendanceTable" class="bg-white divide-y divide-gray-200">
+            <tr>
+              <td colspan="4" class="px-6 py-12 text-center text-gray-500">Cargando...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Logout Section -->
-    <div class="logout-section">
-      <button class="btn-modern btn-secondary-modern" id="logoutBtn" style="padding: 12px 40px;">Cerrar Sesión</button>
+    <div class="mt-8 bg-gray-50 rounded-xl p-6 text-center">
+      <button id="logoutBtn" class="px-8 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+        Cerrar Sesión
+      </button>
     </div>
+
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script src="js/profile.js"></script>
+
+  <script>
+    // Section navigation
+    function showSection(section) {
+      // Hide all sections
+      document.querySelectorAll('[id$="Section"]').forEach(el => {
+        el.classList.add('section-hidden');
+      });
+
+      // Remove active state from all nav buttons
+      document.querySelectorAll('.profile-nav-btn').forEach(btn => {
+        btn.classList.remove('bg-primary-600', 'border-primary-600', 'shadow-lg');
+        btn.classList.add('bg-white', 'border-transparent');
+        btn.querySelectorAll('svg, span').forEach(child => {
+          child.classList.remove('text-primary-700', 'text-white');
+          child.classList.add('text-gray-600', 'group-hover:text-primary-600');
+        });
+      });
+
+      // Show selected section
+      const sectionId = section + 'Section';
+      document.getElementById(sectionId).classList.remove('section-hidden');
+
+      // Set active state on clicked button
+      const buttons = document.querySelectorAll('.profile-nav-btn');
+      const sectionMap = {
+        'profile': 0,
+        'password': 1,
+        'face': 2,
+        'barcode': 3,
+        'attendance': 4
+      };
+      const activeButton = buttons[sectionMap[section]];
+      if (activeButton) {
+        activeButton.classList.add('bg-primary-600', 'border-primary-600', 'shadow-lg');
+        activeButton.classList.remove('bg-white', 'border-transparent');
+        activeButton.querySelectorAll('svg, span').forEach(child => {
+          child.classList.add('text-white');
+          child.classList.remove('text-gray-600', 'group-hover:text-primary-600');
+        });
+      }
+    }
+  </script>
 </body>
 </html>
