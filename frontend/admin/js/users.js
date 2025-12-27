@@ -187,9 +187,12 @@ function openNewUserModal() {
   document.getElementById('password').required = true;
   document.getElementById('passwordGroup').querySelector('small').textContent = 'Mínimo 8 caracteres';
 
-  // Update button text for create mode
+  // Reset button state and update text for create mode
+  saveBtn.disabled = false;
   saveBtn.querySelector('.btn-text').textContent = 'Guardar Usuario';
+  saveBtn.querySelector('.btn-text').classList.remove('hidden');
   saveBtn.querySelector('.btn-loader').innerHTML = '<span class="spinner"></span> Guardando...';
+  saveBtn.querySelector('.btn-loader').classList.add('hidden');
 
   formError.classList.add('hidden');
   formSuccess.classList.add('hidden');
@@ -218,9 +221,12 @@ window.editUser = async function(userId) {
   document.getElementById('passwordGroup').querySelector('small').textContent =
     'Dejar en blanco para mantener la contraseña actual';
 
-  // Update button text for edit mode
+  // Reset button state and update text for edit mode
+  saveBtn.disabled = false;
   saveBtn.querySelector('.btn-text').textContent = 'Actualizar Usuario';
+  saveBtn.querySelector('.btn-text').classList.remove('hidden');
   saveBtn.querySelector('.btn-loader').innerHTML = '<span class="spinner"></span> Actualizando...';
+  saveBtn.querySelector('.btn-loader').classList.add('hidden');
 
   formError.classList.add('hidden');
   formSuccess.classList.add('hidden');
