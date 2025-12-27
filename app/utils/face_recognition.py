@@ -5,7 +5,12 @@ Sistema de nivel bancario con anti-spoofing y liveness detection
 import base64
 import io
 import logging
-from typing import Tuple
+from typing import Tuple, TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    import numpy as np
+    from PIL import Image
+    import cv2
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +61,7 @@ class LivenessCheckFailedError(FaceRecognitionError):
     pass
 
 
-def decode_base64_image(base64_string: str):
+def decode_base64_image(base64_string: str) -> Any:
     """
     Decodifica una imagen base64 a formato numpy array (BGR)
 
@@ -69,6 +74,8 @@ def decode_base64_image(base64_string: str):
     Raises:
         ValueError: Si la imagen no se puede decodificar
     """
+    np, Image, cv2 = _import_dependencies()
+
     try:
         # Remover prefijo data:image si existe
         if "base64," in base64_string:
@@ -95,7 +102,7 @@ def decode_base64_image(base64_string: str):
         raise ValueError("Imagen inválida o corrupta")
 
 
-def check_image_quality(image: np.ndarray) -> Tuple[bool, float]:
+def check_image_quality(image: Any) -> Tuple[bool, float]:
     """
     Verifica la calidad de la imagen usando métricas avanzadas
 
@@ -105,6 +112,7 @@ def check_image_quality(image: np.ndarray) -> Tuple[bool, float]:
     Returns:
         Tuple[bool, float]: (es_buena_calidad, puntaje_calidad)
     """
+    np, _, cv2 = _import_dependencies()
     # Convertir a escala de grises para análisis
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -138,7 +146,7 @@ def check_image_quality(image: np.ndarray) -> Tuple[bool, float]:
     return is_good_quality, quality_score
 
 
-def perform_liveness_detection(image: np.ndarray) -> Tuple[bool, str]:
+def perform_liveness_detection(image: Any) -> Tuple[bool, str]:
     """
     Realiza detección de vida para prevenir spoofing
     Técnicas: análisis de textura, detección de patrones de pantalla, etc.
@@ -149,6 +157,7 @@ def perform_liveness_detection(image: np.ndarray) -> Tuple[bool, str]:
     Returns:
         Tuple[bool, str]: (es_persona_real, razón)
     """
+    np, _, cv2 = _import_dependencies()
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # 1. Detectar patrones de moiré (común en fotos de pantallas)
@@ -213,7 +222,8 @@ async def extract_face_embedding(image_base64: str) -> bytes:
         LivenessCheckFailedError: Falló la verificación de vida
     """
     try:
-        # Importar DeepFace aquí para lazy loading
+        # Importar dependencias
+        np, _, _ = _import_dependencies()
         from deepface import DeepFace
 
         # Decodificar imagen
@@ -299,6 +309,8 @@ async def verify_face(image_base64: str, stored_embedding: bytes) -> Tuple[bool,
         LowQualityImageError: Imagen de baja calidad
     """
     try:
+        # Importar dependencias
+        np, _, _ = _import_dependencies()
         from deepface import DeepFace
 
         # Extraer embedding de la imagen actual
