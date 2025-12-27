@@ -1,7 +1,15 @@
 #!/bin/bash
+set -e  # Detener si hay errores
+
+# Verificar que docker compose esté disponible
+if ! command -v docker &> /dev/null; then
+    echo "❌ Error: Docker no está instalado o no está en el PATH"
+    echo "   Asegúrate de que Docker Desktop esté corriendo"
+    exit 1
+fi
 
 echo "🔄 Deteniendo contenedores de Docker..."
-docker compose down
+docker compose down || true  # No fallar si no hay contenedores corriendo
 
 echo ""
 echo "🔨 Reconstruyendo y levantando contenedores..."
