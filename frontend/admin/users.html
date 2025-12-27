@@ -4,175 +4,264 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Usuarios - Tapwork Admin</title>
-  <link rel="stylesheet" href="css/admin.css">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts - Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            primary: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              300: '#93c5fd',
+              400: '#60a5fa',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
 </head>
-<body>
-  <div class="dashboard">
+<body class="bg-gray-100 font-sans antialiased">
+
+  <div class="flex h-screen overflow-hidden">
+
     <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <div class="logo">TAPWORK</div>
-        <h2>Admin Panel</h2>
-      </div>
-
-      <nav class="sidebar-nav">
-        <a href="index.html" class="nav-item">
-          <span class="icon">📊</span>
-          <span>Dashboard</span>
-        </a>
-        <a href="users.html" class="nav-item active">
-          <span class="icon">👥</span>
-          <span>Usuarios</span>
-        </a>
-        <a href="../scan.html" class="nav-item" target="_blank">
-          <span class="icon">📷</span>
-          <span>Terminal de Asistencia</span>
-        </a>
-      </nav>
-
-      <div class="sidebar-footer">
-        <div class="user-info">
-          <div class="user-avatar" id="userAvatar">A</div>
-          <div class="user-details">
-            <div class="user-name" id="userName">Cargando...</div>
-            <div class="user-role">Administrador</div>
-          </div>
+    <aside class="hidden lg:flex lg:flex-shrink-0">
+      <div class="flex flex-col w-72 bg-gradient-to-b from-gray-900 to-gray-800 border-r border-gray-700">
+        <!-- Sidebar Header -->
+        <div class="flex items-center justify-center h-20 px-6 bg-gray-900 border-b border-gray-700">
+          <h1 class="text-2xl font-bold text-white tracking-tight">TAPWORK</h1>
         </div>
-        <button class="btn btn-secondary btn-block btn-sm" id="logoutBtn">
-          Cerrar Sesión
-        </button>
+        <div class="px-6 py-4 bg-gray-800 border-b border-gray-700">
+          <p class="text-sm font-medium text-gray-400">Panel de Administración</p>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+          <a href="index.html" class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-all duration-200">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+            <span class="font-medium">Dashboard</span>
+          </a>
+
+          <a href="users.html" class="flex items-center px-4 py-3 text-white bg-primary-600 rounded-lg shadow-sm transition-all duration-200">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            <span class="font-medium">Usuarios</span>
+          </a>
+
+          <a href="../scan.html" target="_blank" class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-all duration-200">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span class="font-medium">Terminal de Asistencia</span>
+          </a>
+
+          <a href="profile.html" class="flex items-center px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-all duration-200">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+            <span class="font-medium">Mi Perfil</span>
+          </a>
+        </nav>
+
+        <!-- Sidebar Footer -->
+        <div class="p-4 bg-gray-900 border-t border-gray-700">
+          <div class="flex items-center mb-4">
+            <div id="userAvatar" class="flex items-center justify-center w-10 h-10 rounded-full bg-primary-600 text-white font-bold">
+              A
+            </div>
+            <div class="ml-3 flex-1">
+              <p id="userName" class="text-sm font-medium text-white">Cargando...</p>
+              <p class="text-xs text-gray-400">Administrador</p>
+            </div>
+          </div>
+          <button id="logoutBtn" class="w-full px-4 py-2 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-600">
+            Cerrar Sesión
+          </button>
+        </div>
       </div>
     </aside>
 
     <!-- Main Content -->
-    <div class="main-content">
-      <header class="top-bar">
-        <h1 class="page-title">Gestión de Usuarios</h1>
-        <button class="btn btn-primary" id="newUserBtn">+ Nuevo Usuario</button>
+    <div class="flex-1 flex flex-col overflow-hidden">
+
+      <!-- Top Bar -->
+      <header class="flex items-center justify-between h-20 px-6 bg-white border-b border-gray-200 shadow-sm">
+        <h2 class="text-2xl font-bold text-gray-900">Gestión de Usuarios</h2>
+        <button id="newUserBtn" class="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-sm hover:shadow-md">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Nuevo Usuario
+        </button>
       </header>
 
-      <main class="content">
+      <!-- Page Content -->
+      <main class="flex-1 overflow-y-auto bg-gray-50 p-6">
+
         <!-- Search and Filters -->
-        <div class="card mb-3">
-          <div class="card-body" style="padding: 20px;">
-            <div class="flex items-center gap-2">
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-200">
+          <div class="flex flex-col sm:flex-row gap-4">
+            <div class="flex-1">
               <input
                 type="text"
                 id="searchInput"
                 placeholder="Buscar por nombre, email o ID de empleado..."
-                style="flex: 1; padding: 10px 16px; border: 1px solid var(--border); border-radius: var(--radius-sm);"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
               >
-              <select id="statusFilter" style="padding: 10px 16px; border: 1px solid var(--border); border-radius: var(--radius-sm);">
-                <option value="">Todos los estados</option>
-                <option value="active">Activos</option>
-                <option value="inactive">Inactivos</option>
-              </select>
             </div>
+            <select id="statusFilter" class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
+              <option value="">Todos los estados</option>
+              <option value="active">Activos</option>
+              <option value="inactive">Inactivos</option>
+            </select>
           </div>
         </div>
 
         <!-- Users Table -->
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">Todos los Usuarios (<span id="userCount">0</span>)</h2>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-bold text-gray-900">Todos los Usuarios (<span id="userCount">0</span>)</h3>
           </div>
-          <div class="card-body">
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>ID Empleado</th>
-                    <th>Nombre</th>
-                    <th>Email</th>
-                    <th>Rol</th>
-                    <th>Departamento</th>
-                    <th>Turno</th>
-                    <th>Código</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody id="usersTable">
-                  <tr>
-                    <td colspan="9" class="text-center">Cargando...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID Empleado</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nombre</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Rol</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Departamento</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Turno</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Código</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Estado</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="usersTable" class="bg-white divide-y divide-gray-200">
+                <tr>
+                  <td colspan="9" class="px-6 py-8 text-center text-gray-500">Cargando...</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
+
       </main>
     </div>
   </div>
 
   <!-- Modal: Create/Edit User -->
-  <div id="userModal" class="modal-overlay hidden">
-    <div class="modal">
-      <div class="modal-header">
-        <h2 class="modal-title" id="modalTitle">Nuevo Usuario</h2>
-        <button class="modal-close" id="closeModal">&times;</button>
+  <div id="userModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 sticky top-0 bg-white rounded-t-2xl">
+        <h2 id="modalTitle" class="text-xl font-bold text-gray-900">Nuevo Usuario</h2>
+        <button id="closeModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
       </div>
+
       <form id="userForm">
-        <div class="modal-body">
+        <div class="px-6 py-4 space-y-4">
           <input type="hidden" id="userId">
 
-          <div class="form-group">
-            <label for="firstName">Nombre *</label>
-            <input type="text" id="firstName" name="first_name" required>
+          <div>
+            <label for="firstName" class="block text-sm font-semibold text-gray-700 mb-2">Nombre *</label>
+            <input type="text" id="firstName" name="first_name" required
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
           </div>
 
-          <div class="form-group">
-            <label for="lastName">Apellido *</label>
-            <input type="text" id="lastName" name="last_name" required>
+          <div>
+            <label for="lastName" class="block text-sm font-semibold text-gray-700 mb-2">Apellido *</label>
+            <input type="text" id="lastName" name="last_name" required
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
           </div>
 
-          <div class="form-group">
-            <label for="email">Correo Electrónico *</label>
-            <input type="email" id="email" name="email" required>
+          <div>
+            <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">Correo Electrónico *</label>
+            <input type="email" id="email" name="email" required
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
           </div>
 
-          <div class="form-group" style="display: none;">
-            <label for="employeeId">ID de Empleado (opcional)</label>
-            <input type="text" id="employeeId" name="employee_id" placeholder="Se generará automáticamente">
-            <small style="color: var(--text-muted); font-size: 12px;">Dejar en blanco para generar automáticamente (EMP-001, EMP-002...)</small>
+          <div class="hidden">
+            <label for="employeeId" class="block text-sm font-semibold text-gray-700 mb-2">ID de Empleado (opcional)</label>
+            <input type="text" id="employeeId" name="employee_id" placeholder="Se generará automáticamente"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
+            <p class="mt-2 text-sm text-gray-600">Dejar en blanco para generar automáticamente (EMP-001, EMP-002...)</p>
           </div>
 
-          <div class="form-group" id="passwordGroup">
-            <label for="password">Contraseña *</label>
-            <input type="password" id="password" name="password" minlength="8">
-            <small style="color: var(--text-muted); font-size: 12px;">Mínimo 8 caracteres. Dejar en blanco para mantener actual al editar.</small>
+          <div id="passwordGroup">
+            <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">Contraseña *</label>
+            <input type="password" id="password" name="password" minlength="8"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
+            <p class="mt-2 text-sm text-gray-600">Mínimo 8 caracteres. Dejar en blanco para mantener actual al editar.</p>
           </div>
 
-          <div class="form-group">
-            <label for="roleId">Rol</label>
-            <select id="roleId" name="role_id">
+          <div>
+            <label for="roleId" class="block text-sm font-semibold text-gray-700 mb-2">Rol</label>
+            <select id="roleId" name="role_id"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
               <option value="">Seleccionar rol...</option>
             </select>
           </div>
 
-          <div class="form-group">
-            <label for="departmentId">Departamento</label>
-            <select id="departmentId" name="department_id">
+          <div>
+            <label for="departmentId" class="block text-sm font-semibold text-gray-700 mb-2">Departamento</label>
+            <select id="departmentId" name="department_id"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
               <option value="">Seleccionar departamento...</option>
             </select>
           </div>
 
-          <div class="form-group">
-            <label for="shiftId">Turno</label>
-            <select id="shiftId" name="shift_id">
+          <div>
+            <label for="shiftId" class="block text-sm font-semibold text-gray-700 mb-2">Turno</label>
+            <select id="shiftId" name="shift_id"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
               <option value="">Seleccionar turno...</option>
             </select>
           </div>
 
-          <div id="formError" class="alert alert-error hidden"></div>
-          <div id="formSuccess" class="alert alert-success hidden"></div>
+          <div id="formError" class="hidden bg-red-50 border-l-4 border-red-500 text-red-800 px-4 py-3 rounded-lg text-sm"></div>
+          <div id="formSuccess" class="hidden bg-green-50 border-l-4 border-green-500 text-green-800 px-4 py-3 rounded-lg text-sm"></div>
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
-          <button type="submit" class="btn btn-primary" id="saveBtn">
+        <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
+          <button type="button" id="cancelBtn" class="px-6 py-3 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg font-semibold transition-all duration-200">
+            Cancelar
+          </button>
+          <button type="submit" id="saveBtn" class="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
             <span class="btn-text">Guardar Usuario</span>
-            <span class="btn-loader hidden"><span class="spinner"></span> Guardando...</span>
+            <span class="btn-loader hidden flex items-center">
+              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Guardando...
+            </span>
           </button>
         </div>
       </form>
@@ -180,15 +269,19 @@
   </div>
 
   <!-- Modal: View Barcode -->
-  <div id="barcodeModal" class="modal-overlay hidden">
-    <div class="modal" style="max-width: 400px;">
-      <div class="modal-header">
-        <h2 class="modal-title">Código de Barras</h2>
-        <button class="modal-close" id="closeBarcodeModal">&times;</button>
+  <div id="barcodeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+        <h2 class="text-xl font-bold text-gray-900">Código de Barras</h2>
+        <button id="closeBarcodeModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
       </div>
-      <div class="modal-body text-center">
+      <div class="px-6 py-8 text-center">
         <div id="barcodeContainer"></div>
-        <p id="barcodeCode" style="margin-top: 16px; font-size: 20px; font-weight: 600;"></p>
+        <p id="barcodeCode" class="mt-4 text-2xl font-bold text-gray-900"></p>
       </div>
     </div>
   </div>
