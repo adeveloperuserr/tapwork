@@ -1,15 +1,16 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from .. import schemas
 from ..dependencies import require_role
-from ..models import Department, Role, Shift, User, QRCode
+from ..models import AuditLog, Department, Role, Shift, User, QRCode
 from ..utils.security import hash_password
 from ..utils import barcode
+from ..utils.email import build_admin_created_user_email, send_email
 from ..database import get_db
 
 admin_only = require_role(["Admin"])
@@ -32,7 +33,10 @@ async def list_users(db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/users", response_model=schemas.UserOut, status_code=status.HTTP_201_CREATED)
-async def create_user(payload: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
+async def create_user(request: Request, payload: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
+    # Guardar password en texto plano antes de hashearlo (solo para enviar por email)
+    plain_password = payload.password
+
     # Generar employee_id automáticamente si no se proporciona
     employee_id = payload.employee_id
     if not employee_id:
@@ -58,6 +62,7 @@ async def create_user(payload: schemas.UserCreate, db: AsyncSession = Depends(ge
         department_id=payload.department_id,
         shift_id=payload.shift_id,
         notification_preferences=payload.notification_preferences,
+        is_email_verified=True,  # Auto-verificado cuando lo crea un admin
     )
     db.add(user)
     await db.flush()
@@ -70,7 +75,34 @@ async def create_user(payload: schemas.UserCreate, db: AsyncSession = Depends(ge
         is_active=True
     )
     db.add(barcode_record)
+
+    # Registrar en audit log
+    db.add(AuditLog(
+        user_id=user.id,
+        action="CREATE",
+        resource="user",
+        changes={"created_by_admin": True, "user": str(user.id)},
+        ip_address=request.client.host if request.client else None
+    ))
+
     await db.commit()
+
+    # Enviar email con credenciales y código de barras
+    if user.notification_preferences.get("registration", True):
+        subject, recipient, html = build_admin_created_user_email(
+            user.email,
+            user.first_name,
+            user.employee_id,
+            plain_password
+        )
+        barcode_png = barcode.generate_barcode_png(user.employee_id)
+        await send_email(
+            subject,
+            recipient,
+            f"Bienvenido {user.first_name}",
+            html,
+            attachments=[(f"barcode_{user.employee_id}.png", barcode_png, "image/png")]
+        )
 
     # Recargar con relaciones
     result = await db.execute(
