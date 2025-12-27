@@ -63,7 +63,7 @@ class UserBase(BaseModel):
     email: EmailStr
     first_name: str
     last_name: str
-    employee_id: str
+    employee_id: str | None = None
     role_id: uuid.UUID | None = None
     department_id: uuid.UUID | None = None
     shift_id: uuid.UUID | None = None
@@ -106,6 +106,8 @@ class UserOut(UserBase):
     created_at: datetime
     updated_at: datetime
     role: RoleOut | None = None
+    department: DepartmentOut | None = None
+    shift: ShiftOut | None = None
 
     model_config = {"from_attributes": True}
 

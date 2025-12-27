@@ -127,13 +127,14 @@
           </div>
 
           <div class="form-group">
-            <label for="employeeId">ID de Empleado *</label>
-            <input type="text" id="employeeId" name="employee_id" required placeholder="EMP-001">
-          </div>
-
-          <div class="form-group">
             <label for="email">Correo Electrónico *</label>
             <input type="email" id="email" name="email" required>
+          </div>
+
+          <div class="form-group" style="display: none;">
+            <label for="employeeId">ID de Empleado (opcional)</label>
+            <input type="text" id="employeeId" name="employee_id" placeholder="Se generará automáticamente">
+            <small style="color: var(--text-muted); font-size: 12px;">Dejar en blanco para generar automáticamente (EMP-001, EMP-002...)</small>
           </div>
 
           <div class="form-group" id="passwordGroup">
