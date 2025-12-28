@@ -33,6 +33,12 @@ class DepartmentCreate(DepartmentBase):
     pass
 
 
+class DepartmentUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    manager_id: uuid.UUID | None = None
+
+
 class DepartmentOut(DepartmentBase):
     id: uuid.UUID
     created_at: datetime
@@ -50,6 +56,14 @@ class ShiftBase(BaseModel):
 
 class ShiftCreate(ShiftBase):
     pass
+
+
+class ShiftUpdate(BaseModel):
+    name: str | None = None
+    start_time: time | None = None
+    end_time: time | None = None
+    grace_period_minutes: int | None = None
+    working_days: list[int] | None = None
 
 
 class ShiftOut(ShiftBase):
