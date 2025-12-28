@@ -295,6 +295,34 @@
     </div>
   </div>
 
+  <!-- Modal: Delete Confirmation -->
+  <div id="deleteModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+      <div class="px-6 py-6">
+        <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full">
+          <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <h3 class="mt-4 text-xl font-bold text-gray-900 text-center">¿Eliminar Usuario?</h3>
+        <p class="mt-2 text-sm text-gray-600 text-center">
+          ¿Estás seguro de eliminar a <span id="deleteUserName" class="font-semibold text-gray-900"></span>?
+        </p>
+        <p class="mt-1 text-sm text-red-600 text-center font-medium">
+          Esta acción no se puede deshacer.
+        </p>
+      </div>
+      <div class="flex items-center gap-3 px-6 py-4 bg-gray-50 rounded-b-2xl">
+        <button id="cancelDeleteBtn" class="flex-1 px-4 py-3 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg font-semibold transition-all duration-200">
+          Cancelar
+        </button>
+        <button id="confirmDeleteBtn" class="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-sm hover:shadow-md">
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="js/users.js"></script>
 </body>
 </html>
