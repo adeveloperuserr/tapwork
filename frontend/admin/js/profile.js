@@ -35,11 +35,6 @@ async function loadUserInfo() {
       document.getElementById('adminNav').classList.remove('hidden');
     }
 
-    // Update header (removed headerName as it was deleted)
-    document.getElementById('headerEmail').textContent = currentUser.email;
-    document.getElementById('headerEmployeeId').textContent = currentUser.employee_id;
-    document.getElementById('headerAvatar').textContent = currentUser.first_name.charAt(0).toUpperCase();
-
     // Update profile section - new design
     document.getElementById('profileFullName').textContent = `${currentUser.first_name} ${currentUser.last_name}`;
     document.getElementById('profileRole').textContent = currentUser.role ? currentUser.role.name : 'Usuario';
