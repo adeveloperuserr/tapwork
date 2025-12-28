@@ -35,8 +35,7 @@ async function loadUserInfo() {
       document.getElementById('adminNav').classList.remove('hidden');
     }
 
-    // Update header
-    document.getElementById('headerName').textContent = `${currentUser.first_name} ${currentUser.last_name}`;
+    // Update header (removed headerName as it was deleted)
     document.getElementById('headerEmail').textContent = currentUser.email;
     document.getElementById('headerEmployeeId').textContent = currentUser.employee_id;
     document.getElementById('headerAvatar').textContent = currentUser.first_name.charAt(0).toUpperCase();

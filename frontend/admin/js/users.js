@@ -20,7 +20,8 @@ let shifts = [];
 let isEditMode = false;
 
 // DOM Elements
-const usersTable = document.getElementById('usersTable');
+const usersGrid = document.getElementById('usersGrid');
+const emptyState = document.getElementById('emptyState');
 const userCount = document.getElementById('userCount');
 const searchInput = document.getElementById('searchInput');
 const statusFilter = document.getElementById('statusFilter');
@@ -114,40 +115,89 @@ function renderUsers(users) {
   userCount.textContent = users.length;
 
   if (users.length === 0) {
-    usersTable.innerHTML = '<tr><td colspan="9" class="text-center">No hay usuarios</td></tr>';
+    usersGrid.classList.add('hidden');
+    emptyState.classList.remove('hidden');
     return;
   }
 
-  usersTable.innerHTML = users.map(user => `
-    <tr>
-      <td><strong>${user.employee_id}</strong></td>
-      <td>${user.first_name} ${user.last_name}</td>
-      <td>${user.email}</td>
-      <td>${user.role ? user.role.name : '-'}</td>
-      <td>${user.department ? user.department.name : '-'}</td>
-      <td>${user.shift ? user.shift.name : '-'}</td>
-      <td>
-        ${user.qr_code ?
-          `<button class="btn btn-secondary btn-sm" onclick="viewBarcode('${user.id}', '${user.employee_id}')">Ver Código</button>` :
-          '<span class="badge badge-warning">Sin código</span>'
-        }
-      </td>
-      <td>
-        <span class="badge ${user.is_active ? 'badge-success' : 'badge-danger'}">
-          ${user.is_active ? 'Activo' : 'Inactivo'}
-        </span>
-      </td>
-      <td>
-        <div class="flex gap-2">
-          <button class="btn btn-secondary btn-sm btn-icon" onclick="editUser('${user.id}')" title="Editar">
-            ✏️
+  usersGrid.classList.remove('hidden');
+  emptyState.classList.add('hidden');
+
+  usersGrid.innerHTML = users.map(user => `
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+      <div class="p-6">
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex items-center space-x-3">
+            <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full text-white font-bold text-lg">
+              ${user.first_name.charAt(0).toUpperCase()}${user.last_name.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <h3 class="font-bold text-lg text-gray-900">${user.first_name} ${user.last_name}</h3>
+              <p class="text-sm text-gray-500">${user.employee_id}</p>
+            </div>
+          </div>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+            ${user.is_active ? 'Activo' : 'Inactivo'}
+          </span>
+        </div>
+
+        <div class="space-y-2 mb-4">
+          <div class="flex items-center text-sm">
+            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            <span class="text-gray-600">${user.email}</span>
+          </div>
+
+          <div class="flex items-center text-sm">
+            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+            <span class="text-gray-600">Rol: </span>
+            <span class="ml-1 font-semibold text-gray-900">${user.role ? user.role.name : '-'}</span>
+          </div>
+
+          <div class="flex items-center text-sm">
+            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+            <span class="text-gray-600">Depto: </span>
+            <span class="ml-1 font-semibold text-gray-900">${user.department ? user.department.name : '-'}</span>
+          </div>
+
+          <div class="flex items-center text-sm">
+            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="text-gray-600">Turno: </span>
+            <span class="ml-1 font-semibold text-gray-900">${user.shift ? user.shift.name : '-'}</span>
+          </div>
+        </div>
+
+        <div class="flex space-x-2 pt-4 border-t border-gray-200">
+          ${user.qr_code ?
+            `<button onclick="viewBarcode('${user.id}', '${user.employee_id}')" class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-gray-50 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+              </svg>
+              Código
+            </button>` :
+            '<div class="flex-1"></div>'
+          }
+          <button onclick="editUser('${user.id}')" class="inline-flex items-center justify-center px-3 py-2 bg-primary-50 text-primary-700 font-medium rounded-lg hover:bg-primary-100 transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+            Editar
           </button>
-          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteUser('${user.id}', '${user.first_name} ${user.last_name}')" title="Eliminar">
-            🗑️
+          <button onclick="deleteUser('${user.id}', '${user.first_name} ${user.last_name}')" class="inline-flex items-center justify-center px-3 py-2 bg-red-50 text-red-700 font-medium rounded-lg hover:bg-red-100 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
           </button>
         </div>
-      </td>
-    </tr>
+      </div>
+    </div>
   `).join('');
 }
 

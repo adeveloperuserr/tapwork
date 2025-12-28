@@ -309,6 +309,96 @@
       font-weight: 600;
       color: var(--text);
     }
+
+    /* Mode Toggle */
+    .mode-toggle {
+      background: var(--surface);
+      padding: 15px 30px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .mode-btn {
+      padding: 10px 30px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      background: transparent;
+      color: var(--text-muted);
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 14px;
+    }
+
+    .mode-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .mode-btn:hover:not(.active) {
+      border-color: var(--primary);
+      color: var(--text);
+    }
+
+    .face-guide {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 300px;
+      height: 400px;
+      border: 3px solid var(--primary);
+      border-radius: 200px 200px 150px 150px;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .face-guide::before {
+      content: "Coloca tu rostro aquí";
+      position: absolute;
+      top: -40px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--primary);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .capture-btn {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      padding: 15px 40px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+      transition: all 0.2s;
+    }
+
+    .capture-btn:hover {
+      background: #059669;
+      transform: translateX(-50%) scale(1.05);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+    }
+
+    .capture-btn:active {
+      transform: translateX(-50%) scale(0.95);
+    }
   </style>
 </head>
 <body>
@@ -325,11 +415,21 @@
     <div class="header" id="header">
       <div class="logo">TAPWORK</div>
       <div class="title" id="headerTitle">TERMINAL DE ASISTENCIA</div>
-      <div class="subtitle" id="headerSubtitle">Escanea tu código de barras para registrar entrada o salida</div>
+      <div class="subtitle" id="headerSubtitle">Escanea tu código de barras o usa reconocimiento facial</div>
+    </div>
+
+    <!-- Mode Toggle -->
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="barcodeMode">📊 CÓDIGO DE BARRAS</button>
+      <button class="mode-btn" id="faceMode">👤 RECONOCIMIENTO FACIAL</button>
     </div>
 
     <div class="scanner-container" id="scannerContainer">
+      <video id="video" class="hidden" autoplay playsinline></video>
+      <canvas id="canvas" class="hidden"></canvas>
       <div class="scan-guide hidden" id="scanGuide"></div>
+      <div class="face-guide hidden" id="faceGuide"></div>
+      <button class="capture-btn hidden" id="captureBtn">CAPTURAR ROSTRO</button>
     </div>
 
     <div class="status-bar">
@@ -388,12 +488,21 @@
     const toastBody = document.getElementById("toastBody");
     const lastScanInfo = document.getElementById("lastScanInfo");
     const scanCount = document.getElementById("scanCount");
+    const barcodeModeBtn = document.getElementById("barcodeMode");
+    const faceModeBtn = document.getElementById("faceMode");
+    const videoElement = document.getElementById("video");
+    const canvasElement = document.getElementById("canvas");
+    const scanGuide = document.getElementById("scanGuide");
+    const faceGuide = document.getElementById("faceGuide");
+    const captureBtn = document.getElementById("captureBtn");
 
     // Estado
     let isScanning = false;
     let lastScannedCode = null;
     let lastScanTime = 0;
     let totalScans = 0;
+    let currentMode = 'barcode'; // 'barcode' or 'face'
+    let videoStream = null;
 
     // Mostrar notificación toast
     function showToast(success, title, body) {
@@ -574,8 +683,167 @@
       oscillator.stop(audioContext.currentTime + 0.2);
     }
 
-    startBtn.onclick = startCamera;
-    stopBtn.onclick = stopCamera;
+    // Mode switching
+    barcodeModeBtn.onclick = () => switchMode('barcode');
+    faceModeBtn.onclick = () => switchMode('face');
+
+    function switchMode(mode) {
+      if (isScanning) {
+        if (currentMode === 'barcode') {
+          stopCamera();
+        } else {
+          stopFaceRecognition();
+        }
+      }
+
+      currentMode = mode;
+
+      if (mode === 'barcode') {
+        barcodeModeBtn.classList.add('active');
+        faceModeBtn.classList.remove('active');
+      } else {
+        faceModeBtn.classList.add('active');
+        barcodeModeBtn.classList.remove('active');
+      }
+    }
+
+    // Face recognition
+    async function startFaceRecognition() {
+      if (isScanning) return;
+
+      try {
+        statusBox.textContent = "Inicializando cámara...";
+        startBtn.classList.add("hidden");
+
+        videoStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: "user"
+          }
+        });
+
+        videoElement.srcObject = videoStream;
+        videoElement.classList.remove('hidden');
+        canvasElement.classList.add('hidden');
+
+        isScanning = true;
+        statusBox.textContent = "Cámara activa - Presiona capturar cuando estés listo";
+        statusIndicator.classList.add("active");
+        stopBtn.classList.remove("hidden");
+        faceGuide.classList.remove("hidden");
+        captureBtn.classList.remove("hidden");
+
+      } catch (err) {
+        statusBox.textContent = "Error: No se pudo acceder a la cámara";
+        showToast(false, 'ERROR DE CÁMARA', `No se pudo iniciar la cámara: ${err.message}`);
+        startBtn.classList.remove("hidden");
+        console.error(err);
+      }
+    }
+
+    function stopFaceRecognition() {
+      if (!isScanning) return;
+
+      if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+        videoStream = null;
+      }
+
+      videoElement.classList.add('hidden');
+      canvasElement.classList.add('hidden');
+      isScanning = false;
+      statusBox.textContent = "Cámara detenida";
+      statusIndicator.classList.remove("active");
+      stopBtn.classList.add("hidden");
+      startBtn.classList.remove("hidden");
+      faceGuide.classList.add("hidden");
+      captureBtn.classList.add("hidden");
+    }
+
+    async function captureFace() {
+      if (!videoStream) return;
+
+      statusBox.textContent = "Capturando rostro...";
+      captureBtn.disabled = true;
+
+      // Setup canvas
+      canvasElement.width = videoElement.videoWidth;
+      canvasElement.height = videoElement.videoHeight;
+      const ctx = canvasElement.getContext('2d');
+      ctx.drawImage(videoElement, 0, 0);
+
+      // Convert to blob
+      canvasElement.toBlob(async (blob) => {
+        const formData = new FormData();
+        formData.append('image', blob, 'face.jpg');
+        formData.append('action', 'check_in'); // Backend detects automatically
+
+        try {
+          const res = await fetch(`${apiBase.value}/api/attendance/biometric-scan`, {
+            method: "POST",
+            body: formData
+          });
+          const json = await res.json();
+
+          if (res.ok) {
+            const isCheckOut = json.check_out !== null && json.check_out !== undefined;
+            const actionText = isCheckOut ? 'SALIDA' : 'ENTRADA';
+            const time = new Date().toLocaleTimeString('es-ES');
+
+            totalScans++;
+            scanCount.textContent = totalScans++;
+            const employeeName = json.employee_name || 'Desconocido';
+            lastScanInfo.textContent = `${employeeName} - ${actionText} - ${time}`;
+
+            const toastMessage = `
+              <strong>Empleado:</strong> ${employeeName}<br>
+              <strong>Acción:</strong> ${actionText}<br>
+              <strong>Hora:</strong> ${time}<br>
+              <strong>Estado:</strong> ${json.status || 'Registrado correctamente'}
+            `;
+
+            showToast(true, `${actionText} REGISTRADA`, toastMessage);
+            statusBox.textContent = `Último: ${actionText} de ${employeeName}`;
+            playBeep(true);
+
+          } else {
+            const errorMsg = json.detail || 'Error desconocido';
+            showToast(false, 'ERROR AL REGISTRAR', errorMsg);
+            statusBox.textContent = `Error - Intenta de nuevo`;
+            playBeep(false);
+          }
+        } catch (err) {
+          showToast(false, 'ERROR DE CONEXIÓN', `
+            No se pudo conectar con el servidor<br>
+            <small>${err.message}</small>
+          `);
+          statusBox.textContent = `Error de conexión`;
+          playBeep(false);
+        } finally {
+          captureBtn.disabled = false;
+          statusBox.textContent = "Cámara activa - Presiona capturar cuando estés listo";
+        }
+      }, 'image/jpeg', 0.95);
+    }
+
+    captureBtn.onclick = captureFace;
+
+    startBtn.onclick = () => {
+      if (currentMode === 'barcode') {
+        startCamera();
+      } else {
+        startFaceRecognition();
+      }
+    };
+
+    stopBtn.onclick = () => {
+      if (currentMode === 'barcode') {
+        stopCamera();
+      } else {
+        stopFaceRecognition();
+      }
+    };
   </script>
 </body>
 </html>
