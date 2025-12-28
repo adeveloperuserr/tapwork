@@ -36,6 +36,13 @@ const formSuccess = document.getElementById('formSuccess');
 const logoutBtn = document.getElementById('logoutBtn');
 const barcodeModal = document.getElementById('barcodeModal');
 const closeBarcodeModal = document.getElementById('closeBarcodeModal');
+const deleteModal = document.getElementById('deleteModal');
+const deleteUserNameSpan = document.getElementById('deleteUserName');
+const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+
+// State for delete operation
+let userToDelete = { id: null, name: null };
 
 // Load user info
 async function loadUserInfo() {
@@ -211,7 +218,7 @@ function openNewUserModal() {
   userForm.reset();
   document.getElementById('userId').value = '';
   document.getElementById('password').required = true;
-  document.getElementById('passwordGroup').querySelector('small').textContent = 'Mínimo 8 caracteres';
+  document.getElementById('passwordGroup').querySelector('p').textContent = 'Mínimo 8 caracteres';
 
   // Reset button state and update text for create mode
   saveBtn.disabled = false;
@@ -244,7 +251,7 @@ window.editUser = async function(userId) {
   document.getElementById('departmentId').value = user.department_id || '';
   document.getElementById('shiftId').value = user.shift_id || '';
 
-  document.getElementById('passwordGroup').querySelector('small').textContent =
+  document.getElementById('passwordGroup').querySelector('p').textContent =
     'Dejar en blanco para mantener la contraseña actual';
 
   // Reset button state and update text for edit mode
@@ -259,14 +266,21 @@ window.editUser = async function(userId) {
   userModal.classList.remove('hidden');
 };
 
-// Delete user
-window.deleteUser = async function(userId, userName) {
-  if (!confirm(`¿Estás seguro de eliminar a ${userName}?\n\nEsta acción no se puede deshacer.`)) {
-    return;
-  }
+// Delete user - Open confirmation modal
+window.deleteUser = function(userId, userName) {
+  userToDelete = { id: userId, name: userName };
+  deleteUserNameSpan.textContent = userName;
+  deleteModal.classList.remove('hidden');
+};
+
+// Confirm delete user
+async function confirmDelete() {
+  if (!userToDelete.id) return;
+
+  deleteModal.classList.add('hidden');
 
   try {
-    const res = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
+    const res = await fetch(`${API_BASE}/api/admin/users/${userToDelete.id}`, {
       method: 'DELETE',
       headers: authHeaders
     });
@@ -276,12 +290,19 @@ window.deleteUser = async function(userId, userName) {
       throw new Error(error.detail || 'Error al eliminar usuario');
     }
 
-    alert(`Usuario ${userName} eliminado exitosamente`);
-    loadAllData(); // Reload table
+    // Success notification - using a simple alert for now
+    alert(`Usuario ${userToDelete.name} eliminado exitosamente`);
+
+    // Reset state
+    userToDelete = { id: null, name: null };
+
+    // Reload table
+    loadAllData();
   } catch (error) {
     alert(`Error: ${error.message}`);
+    userToDelete = { id: null, name: null };
   }
-};
+}
 
 // View barcode
 window.viewBarcode = async function(userId, employeeId) {
@@ -392,6 +413,13 @@ closeModal.addEventListener('click', () => userModal.classList.add('hidden'));
 cancelBtn.addEventListener('click', () => userModal.classList.add('hidden'));
 closeBarcodeModal.addEventListener('click', () => barcodeModal.classList.add('hidden'));
 
+// Delete modal listeners
+cancelDeleteBtn.addEventListener('click', () => {
+  deleteModal.classList.add('hidden');
+  userToDelete = { id: null, name: null };
+});
+confirmDeleteBtn.addEventListener('click', confirmDelete);
+
 searchInput.addEventListener('input', filterUsers);
 statusFilter.addEventListener('change', filterUsers);
 
@@ -411,6 +439,13 @@ userModal.addEventListener('click', (e) => {
 barcodeModal.addEventListener('click', (e) => {
   if (e.target === barcodeModal) {
     barcodeModal.classList.add('hidden');
+  }
+});
+
+deleteModal.addEventListener('click', (e) => {
+  if (e.target === deleteModal) {
+    deleteModal.classList.add('hidden');
+    userToDelete = { id: null, name: null };
   }
 });
 
