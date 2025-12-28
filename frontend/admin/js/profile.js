@@ -30,14 +30,24 @@ async function loadUserInfo() {
 
     currentUser = await res.json();
 
+    // Show admin navigation if user is Admin
+    if (currentUser.role && currentUser.role.name === 'Admin') {
+      document.getElementById('adminNav').classList.remove('hidden');
+    }
+
     // Update header
     document.getElementById('headerName').textContent = `${currentUser.first_name} ${currentUser.last_name}`;
     document.getElementById('headerEmail').textContent = currentUser.email;
     document.getElementById('headerEmployeeId').textContent = currentUser.employee_id;
     document.getElementById('headerAvatar').textContent = currentUser.first_name.charAt(0).toUpperCase();
 
-    // Update profile info
-    document.getElementById('fullName').textContent = `${currentUser.first_name} ${currentUser.last_name}`;
+    // Update profile section - new design
+    document.getElementById('profileFullName').textContent = `${currentUser.first_name} ${currentUser.last_name}`;
+    document.getElementById('profileRole').textContent = currentUser.role ? currentUser.role.name : 'Usuario';
+    document.getElementById('profileAvatar').textContent = currentUser.first_name.charAt(0).toUpperCase();
+
+    document.getElementById('firstName').textContent = currentUser.first_name;
+    document.getElementById('lastName').textContent = currentUser.last_name;
     document.getElementById('email').textContent = currentUser.email;
     document.getElementById('employeeId').textContent = currentUser.employee_id;
     document.getElementById('department').textContent = currentUser.department ? currentUser.department.name : '-';
