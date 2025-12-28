@@ -177,6 +177,26 @@ async def create_department(payload: schemas.DepartmentCreate, db: AsyncSession 
     return dept
 
 
+@router.patch("/departments/{department_id}", response_model=schemas.DepartmentOut)
+async def update_department(department_id: uuid.UUID, payload: schemas.DepartmentUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Department).where(Department.id == department_id))
+    dept = result.scalar_one_or_none()
+    if not dept:
+        raise HTTPException(status_code=404, detail="Departamento no encontrado")
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(dept, field, value)
+    await db.commit()
+    await db.refresh(dept)
+    return dept
+
+
+@router.delete("/departments/{department_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_department(department_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    await db.execute(delete(Department).where(Department.id == department_id))
+    await db.commit()
+    return {"detail": "deleted"}
+
+
 @router.get("/shifts", response_model=list[schemas.ShiftOut])
 async def list_shifts(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Shift))
@@ -190,4 +210,24 @@ async def create_shift(payload: schemas.ShiftCreate, db: AsyncSession = Depends(
     await db.commit()
     await db.refresh(shift)
     return shift
+
+
+@router.patch("/shifts/{shift_id}", response_model=schemas.ShiftOut)
+async def update_shift(shift_id: uuid.UUID, payload: schemas.ShiftUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Shift).where(Shift.id == shift_id))
+    shift = result.scalar_one_or_none()
+    if not shift:
+        raise HTTPException(status_code=404, detail="Turno no encontrado")
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(shift, field, value)
+    await db.commit()
+    await db.refresh(shift)
+    return shift
+
+
+@router.delete("/shifts/{shift_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_shift(shift_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    await db.execute(delete(Shift).where(Shift.id == shift_id))
+    await db.commit()
+    return {"detail": "deleted"}
 
