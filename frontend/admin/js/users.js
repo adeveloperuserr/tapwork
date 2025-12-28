@@ -217,8 +217,6 @@ function openNewUserModal() {
   modalTitle.textContent = 'Nuevo Usuario';
   userForm.reset();
   document.getElementById('userId').value = '';
-  document.getElementById('password').required = true;
-  document.getElementById('passwordGroup').querySelector('p').textContent = 'Mínimo 8 caracteres';
 
   // Reset button state and update text for create mode
   saveBtn.disabled = false;
@@ -245,14 +243,9 @@ window.editUser = async function(userId) {
   document.getElementById('lastName').value = user.last_name;
   document.getElementById('employeeId').value = user.employee_id;
   document.getElementById('email').value = user.email;
-  document.getElementById('password').value = '';
-  document.getElementById('password').required = false;
   document.getElementById('roleId').value = user.role_id || '';
   document.getElementById('departmentId').value = user.department_id || '';
   document.getElementById('shiftId').value = user.shift_id || '';
-
-  document.getElementById('passwordGroup').querySelector('p').textContent =
-    'Dejar en blanco para mantener la contraseña actual';
 
   // Reset button state and update text for edit mode
   saveBtn.disabled = false;
@@ -353,10 +346,7 @@ userForm.addEventListener('submit', async (e) => {
     }
   };
 
-  const password = document.getElementById('password').value;
-  if (password || !isEditMode) {
-    formData.password = password;
-  }
+  // No se envía password - el sistema lo genera automáticamente
 
   // Loading state
   saveBtn.disabled = true;

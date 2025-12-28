@@ -88,11 +88,16 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    password: str
+    password: str | None = None  # Opcional: se genera automáticamente si no se proporciona
 
     @field_validator('password')
     @classmethod
-    def validate_password(cls, v: str) -> str:
+    def validate_password(cls, v: str | None) -> str | None:
+        # Si no se proporciona password, se generará automáticamente
+        if v is None:
+            return None
+
+        # Si se proporciona, validar que cumpla los requisitos
         if len(v) < 8:
             raise ValueError('La contraseña debe tener al menos 8 caracteres')
         if not re.search(r'[A-Z]', v):
@@ -134,6 +139,7 @@ class AuthTokens(BaseModel):
 class AuthResponse(BaseModel):
     user: UserOut
     tokens: AuthTokens
+    password_reset_required: bool = False  # Indica si el usuario debe cambiar su contraseña
 
 
 class LoginRequest(BaseModel):
@@ -155,6 +161,24 @@ class PasswordResetRequest(BaseModel):
 
 class PasswordResetConfirm(BaseModel):
     token: str
+    new_password: str
+
+    @field_validator('new_password')
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError('La contraseña debe tener al menos 8 caracteres')
+        if not re.search(r'[A-Z]', v):
+            raise ValueError('La contraseña debe tener al menos una mayúscula')
+        if not re.search(r'[a-z]', v):
+            raise ValueError('La contraseña debe tener al menos una minúscula')
+        if not re.search(r'[0-9]', v):
+            raise ValueError('La contraseña debe tener al menos un número')
+        return v
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
     new_password: str
 
     @field_validator('new_password')

@@ -20,6 +20,7 @@ from ..utils.security import (
     hash_password,
     verify_password,
 )
+from ..utils.password import is_password_expired
 from ..database import get_db
 
 logger = logging.getLogger(__name__)
@@ -80,6 +81,8 @@ async def register(request: Request, payload: schemas.RegistrationRequest, db: A
         department_id=payload.department_id,
         shift_id=payload.shift_id,
         notification_preferences=payload.notification_preferences,
+        password_reset_required=True,  # Requerir cambio en primer login
+        password_changed_at=None,  # Nunca ha cambiado la contraseña
     )
     db.add(user)
     await db.flush()
@@ -138,8 +141,18 @@ async def login(request: Request, payload: schemas.LoginRequest, db: AsyncSessio
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Usuario inactivo")
 
+    # Verificar si la contraseña expiró (cada 3 meses = 90 días)
+    password_expired = is_password_expired(user.password_changed_at, days=90)
+
+    # Verificar si requiere cambio de contraseña (primer login o expiración)
+    needs_password_change = user.password_reset_required or password_expired
+
     tokens = schemas.AuthTokens(access_token=create_access_token(str(user.id)))
-    return schemas.AuthResponse(user=user, tokens=tokens)
+    return schemas.AuthResponse(
+        user=user,
+        tokens=tokens,
+        password_reset_required=needs_password_change
+    )
 
 
 @router.post("/login/face", response_model=schemas.AuthResponse)
@@ -320,10 +333,43 @@ async def confirm_password_reset(request: Request, payload: schemas.PasswordRese
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    # Actualizar contraseña y campos de password management
     user.password_hash = hash_password(payload.new_password)
+    user.password_reset_required = False
+    user.password_changed_at = datetime.now()
+    user.password_reset_token = None
+    user.password_reset_expires = None
+
     await db.commit()
     await _log(db, user.id, "RESET", "user", None, ip_address=request.client.host if request.client else None)
     return {"detail": "Contraseña actualizada"}
+
+
+@router.post("/change-password")
+async def change_password(
+    request: Request,
+    payload: schemas.ChangePasswordRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Cambiar contraseña del usuario autenticado.
+    Requiere la contraseña actual y la nueva contraseña.
+    """
+    # Verificar la contraseña actual
+    if not verify_password(payload.current_password, current_user.password_hash):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Contraseña actual incorrecta")
+
+    # Actualizar contraseña y campos de password management
+    current_user.password_hash = hash_password(payload.new_password)
+    current_user.password_reset_required = False
+    current_user.password_changed_at = datetime.now()
+
+    await db.commit()
+    await _log(db, current_user.id, "CHANGE_PASSWORD", "user", None, ip_address=request.client.host if request.client else None)
+
+    return {"detail": "Contraseña cambiada exitosamente"}
 
 
 @router.get("/me", response_model=schemas.UserOut)

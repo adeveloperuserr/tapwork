@@ -83,6 +83,12 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
 
+    # Password management fields
+    password_reset_required: Mapped[bool] = mapped_column(Boolean, default=True)
+    password_changed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    password_reset_token: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
+    password_reset_expires: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
     role: Mapped["Role | None"] = relationship("Role", back_populates="users")
     department: Mapped["Department | None"] = relationship("Department", back_populates="users", foreign_keys=[department_id])
     shift: Mapped["Shift | None"] = relationship("Shift", back_populates="users")

@@ -11,6 +11,7 @@ from ..models import AuditLog, Department, Role, Shift, User, QRCode
 from ..utils.security import hash_password
 from ..utils import barcode
 from ..utils.email import build_admin_created_user_email, send_email
+from ..utils.password import generate_secure_password
 from ..database import get_db
 
 admin_only = require_role(["Admin"])
@@ -34,8 +35,8 @@ async def list_users(db: AsyncSession = Depends(get_db)):
 
 @router.post("/users", response_model=schemas.UserOut, status_code=status.HTTP_201_CREATED)
 async def create_user(request: Request, payload: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
-    # Guardar password en texto plano antes de hashearlo (solo para enviar por email)
-    plain_password = payload.password
+    # Generar password automáticamente si no se proporciona
+    plain_password = payload.password if payload.password else generate_secure_password()
 
     # Generar employee_id automáticamente si no se proporciona
     employee_id = payload.employee_id
@@ -54,7 +55,7 @@ async def create_user(request: Request, payload: schemas.UserCreate, db: AsyncSe
 
     user = User(
         email=payload.email,
-        password_hash=hash_password(payload.password),
+        password_hash=hash_password(plain_password),
         first_name=payload.first_name,
         last_name=payload.last_name,
         employee_id=employee_id,
@@ -63,6 +64,8 @@ async def create_user(request: Request, payload: schemas.UserCreate, db: AsyncSe
         shift_id=payload.shift_id,
         notification_preferences=payload.notification_preferences,
         is_email_verified=True,  # Auto-verificado cuando lo crea un admin
+        password_reset_required=True,  # Requerir cambio de contraseña en primer login
+        password_changed_at=None,  # Nunca ha cambiado la contraseña
     )
     db.add(user)
     await db.flush()

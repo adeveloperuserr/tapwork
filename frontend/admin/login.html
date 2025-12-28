@@ -140,6 +140,13 @@
               </span>
             </button>
           </form>
+
+          <!-- Forgot Password Link -->
+          <div class="mt-4 text-center">
+            <a href="../forgot-password.html" class="text-sm text-primary-600 hover:text-primary-700 font-medium">
+              ¿Olvidaste tu contraseña?
+            </a>
+          </div>
         </div>
 
         <!-- Face Recognition Login -->
@@ -425,6 +432,12 @@
         localStorage.setItem('access_token', data.tokens.access_token);
         localStorage.setItem('user', JSON.stringify(data.user));
 
+        // Verificar si requiere cambio de contraseña
+        if (data.password_reset_required) {
+          window.location.href = '../change-password.html';
+          return;
+        }
+
         const isAdmin = data.user.role && data.user.role.name === 'Admin';
         window.location.href = isAdmin ? 'index.html' : 'profile.html';
 
@@ -469,6 +482,12 @@
         // Guardar token y datos de usuario
         localStorage.setItem('access_token', data.tokens.access_token);
         localStorage.setItem('user', JSON.stringify(data.user));
+
+        // Verificar si requiere cambio de contraseña
+        if (data.password_reset_required) {
+          window.location.href = '../change-password.html';
+          return;
+        }
 
         // Redirigir según el rol del usuario
         const isAdmin = data.user.role && data.user.role.name === 'Admin';
