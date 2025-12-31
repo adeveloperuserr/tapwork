@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query, File, UploadFile, Form
 from sqlalchemy import and_, select, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 import logging
 
 from .. import schemas
@@ -17,6 +18,7 @@ router = APIRouter(prefix="/api/attendance", tags=["attendance"])
 
 
 async def _status_for_check_in(user: User, check_in: datetime) -> str:
+    # User must have eagerly loaded shift relationship
     if not user.shift:
         return "on-time"
     start_dt = datetime.combine(check_in.date(), user.shift.start_time)
@@ -38,7 +40,9 @@ async def scan_attendance(payload: schemas.AttendanceCreate, db: AsyncSession = 
     if not qr:
         raise HTTPException(status_code=404, detail="Código no válido")
 
-    user_result = await db.execute(select(User).where(User.id == qr.user_id))
+    user_result = await db.execute(
+        select(User).options(selectinload(User.shift)).where(User.id == qr.user_id)
+    )
     user = user_result.scalar_one_or_none()
     if not user or not user.is_active:
         raise HTTPException(status_code=403, detail="Usuario inactivo")
@@ -111,10 +115,11 @@ async def biometric_scan(
         # Extract face embedding from uploaded image
         uploaded_embedding = await extract_face_embedding(image_data)
 
-        # Get all registered face embeddings
+        # Get all registered face embeddings with eager loading of shift
         result = await db.execute(
             select(BiometricData, User)
             .join(User, BiometricData.user_id == User.id)
+            .options(selectinload(User.shift))
             .where(BiometricData.biometric_type == "face")
             .where(User.is_active == True)
         )
