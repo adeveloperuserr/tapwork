@@ -131,6 +131,8 @@ async def biometric_scan(
         )
         registered_faces = result.all()
 
+        logger.info(f"🔍 Found {len(registered_faces)} registered faces in database")
+
         if not registered_faces:
             raise HTTPException(
                 status_code=404,
@@ -139,19 +141,27 @@ async def biometric_scan(
 
         # Find matching user
         matched_user = None
-        for biometric, user in registered_faces:
+        best_distance = float('inf')
+        best_user_email = None
+
+        for idx, (biometric, user) in enumerate(registered_faces):
             try:
+                logger.info(f"👤 Comparing with user {idx+1}/{len(registered_faces)}: {user.email}")
                 is_match = compare_faces(uploaded_embedding, biometric.biometric_hash)
                 if is_match:
                     matched_user = user
+                    logger.info(f"✅ MATCH FOUND with user: {user.email}")
                     # Update last verified
                     biometric.last_verified_at = datetime.utcnow()
                     break
+                else:
+                    logger.info(f"❌ No match with user: {user.email}")
             except Exception as e:
                 logger.warning(f"Error comparing faces for user {user.email}: {e}")
                 continue
 
         if not matched_user:
+            logger.error(f"🚫 No match found after comparing with {len(registered_faces)} registered faces")
             raise HTTPException(
                 status_code=404,
                 detail="Rostro no reconocido. Por favor registra tu rostro primero."
