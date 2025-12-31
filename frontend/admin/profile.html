@@ -292,27 +292,87 @@
         </div>
       </div>
 
-      <!-- Camera Section -->
+      <!-- Action Buttons - MOVED BEFORE CAMERA -->
+      <div class="flex flex-wrap gap-4 mb-6 justify-center">
+        <button id="startCameraBtn" onclick="startCamera()" class="flex items-center px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-lg">
+          <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          Activar Cámara
+        </button>
+        <button id="captureFaceBtn" onclick="captureFace()" class="hidden flex items-center px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-lg animate-pulse">
+          <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          📸 Capturar Foto
+        </button>
+        <button id="stopCameraBtn" onclick="stopCamera()" class="hidden flex items-center px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-all duration-200">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+          Detener
+        </button>
+        <button id="deleteFaceBtn" onclick="deleteFaceRegistration()" class="hidden flex items-center px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all duration-200">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          Eliminar Registro
+        </button>
+      </div>
+
+      <!-- Camera Section with Face Guide -->
       <div class="mb-8">
-        <div class="relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-8">
-          <video id="faceVideo" width="640" height="480" autoplay class="hidden w-full rounded-lg shadow-inner bg-black max-w-2xl mx-auto"></video>
-          <canvas id="faceCanvas" width="640" height="480" class="hidden"></canvas>
+        <div class="relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl overflow-hidden">
+          <!-- Video Container with Face Guide Overlay -->
+          <div class="relative">
+            <video id="faceVideo" width="640" height="480" autoplay class="hidden w-full bg-black max-w-2xl mx-auto"></video>
+            <canvas id="faceCanvas" width="640" height="480" class="hidden"></canvas>
 
-          <div id="facePlaceholder" class="min-h-96 flex flex-col items-center justify-center text-white py-16">
-            <svg class="w-24 h-24 text-gray-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
-            <p class="text-lg font-medium">Haz clic en "Activar Cámara" para comenzar</p>
-          </div>
+            <!-- Face Guide Overlay - Oval Shape -->
+            <div id="faceGuide" class="hidden absolute inset-0 pointer-events-none">
+              <svg class="w-full h-full" viewBox="0 0 640 480">
+                <!-- Dark overlay with hole for face -->
+                <defs>
+                  <mask id="faceMask">
+                    <rect width="640" height="480" fill="white"/>
+                    <ellipse cx="320" cy="240" rx="140" ry="180" fill="black"/>
+                  </mask>
+                </defs>
+                <rect width="640" height="480" fill="rgba(0,0,0,0.6)" mask="url(#faceMask)"/>
 
-          <!-- Face Detection Overlay -->
-          <div id="faceOverlay" class="hidden absolute inset-8 border-4 border-green-500 rounded-xl pointer-events-none">
-            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-500 text-white px-6 py-3 rounded-lg font-semibold shadow-lg">
-              <svg class="w-6 h-6 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                <!-- Face guide oval with animated border -->
+                <ellipse cx="320" cy="240" rx="140" ry="180" fill="none" stroke="#60a5fa" stroke-width="4" stroke-dasharray="10 5" class="animate-pulse"/>
+
+                <!-- Corner guides -->
+                <line x1="180" y1="60" x2="200" y2="60" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+                <line x1="180" y1="60" x2="180" y2="80" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+
+                <line x1="460" y1="60" x2="440" y2="60" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+                <line x1="460" y1="60" x2="460" y2="80" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+
+                <line x1="180" y1="420" x2="200" y2="420" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+                <line x1="180" y1="420" x2="180" y2="400" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+
+                <line x1="460" y1="420" x2="440" y2="420" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+                <line x1="460" y1="420" x2="460" y2="400" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+
+                <!-- Instruction text -->
+                <text x="320" y="450" text-anchor="middle" fill="#60a5fa" font-size="16" font-weight="600">
+                  Centra tu rostro en el óvalo
+                </text>
               </svg>
-              Rostro Detectado
+            </div>
+
+            <!-- Placeholder -->
+            <div id="facePlaceholder" class="min-h-96 flex flex-col items-center justify-center text-white py-16 px-8">
+              <svg class="w-32 h-32 text-primary-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              <p class="text-xl font-semibold mb-2">Presiona "Activar Cámara" para iniciar</p>
+              <p class="text-gray-400 text-center max-w-md">Asegúrate de estar en un lugar bien iluminado y que tu rostro sea claramente visible</p>
             </div>
           </div>
         </div>
@@ -353,36 +413,6 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="flex flex-wrap gap-4 mb-6">
-        <button id="startCameraBtn" onclick="startCamera()" class="flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-sm hover:shadow-md">
-          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-          </svg>
-          Activar Cámara
-        </button>
-        <button id="captureFaceBtn" onclick="captureFace()" class="hidden flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-sm hover:shadow-md">
-          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-          </svg>
-          Capturar Rostro
-        </button>
-        <button id="stopCameraBtn" onclick="stopCamera()" class="hidden flex items-center px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-all duration-200">
-          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-          Detener Cámara
-        </button>
-        <button id="deleteFaceBtn" onclick="deleteFaceRegistration()" class="hidden flex items-center px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all duration-200">
-          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-          </svg>
-          Eliminar Registro
-        </button>
       </div>
 
       <!-- Messages -->
