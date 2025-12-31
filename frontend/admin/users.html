@@ -223,15 +223,15 @@
                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
           </div>
 
-          <div class="hidden">
+          <div>
             <label for="employeeId" class="block text-sm font-semibold text-gray-700 mb-2">ID de Empleado (opcional)</label>
             <input type="text" id="employeeId" name="employee_id" placeholder="Se generará automáticamente"
                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200">
             <p class="mt-2 text-sm text-gray-600">Dejar en blanco para generar automáticamente (EMP-001, EMP-002...)</p>
           </div>
 
-          <!-- El sistema generará una contraseña segura automáticamente y la enviará por email -->
-          <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+          <!-- Notificación de contraseña automática (solo en modo crear) -->
+          <div id="passwordNotice" class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
             <div class="flex">
               <div class="flex-shrink-0">
                 <svg class="h-5 w-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -270,8 +270,19 @@
             </select>
           </div>
 
-          <div id="formError" class="hidden bg-red-50 border-l-4 border-red-500 text-red-800 px-4 py-3 rounded-lg text-sm"></div>
-          <div id="formSuccess" class="hidden bg-green-50 border-l-4 border-green-500 text-green-800 px-4 py-3 rounded-lg text-sm"></div>
+          <!-- Toggle de estado activo/inactivo -->
+          <div id="statusToggleContainer" class="hidden">
+            <label class="flex items-center justify-between p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+              <div class="flex-1">
+                <span class="block text-sm font-semibold text-gray-700">Estado del Usuario</span>
+                <span class="block text-xs text-gray-500 mt-1">Activo: puede iniciar sesión | Inactivo: acceso bloqueado</span>
+              </div>
+              <div class="relative">
+                <input type="checkbox" id="isActive" class="sr-only peer" checked>
+                <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+              </div>
+            </label>
+          </div>
         </div>
 
         <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-2xl">

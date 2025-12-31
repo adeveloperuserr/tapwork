@@ -9,29 +9,35 @@ if ! command -v docker &> /dev/null; then
 fi
 
 echo "Descargando ultimos cambios de Git..."
-if ! git pull; then
-    echo "⚠️  git pull falló. Intentando sync completo..."
 
-    # Guardar cambios locales si los hay
-    git stash save "Auto-stash antes de sync - $(date)" || true
+# Verificar si hay cambios locales
+if ! git diff-index --quiet HEAD --; then
+    echo "⚠️  ADVERTENCIA: Tienes cambios locales no commiteados"
+    echo "   Estos cambios se DESCARTARÁN para sincronizar con el servidor"
+    echo ""
+fi
 
-    # Obtener la rama actual
-    CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+# Obtener la rama actual
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
-    # Hacer fetch y reset
-    echo "Haciendo fetch del remote..."
-    git fetch origin
+# Hacer fetch
+echo "Haciendo fetch del remote..."
+git fetch origin
 
-    echo "Reseteando a origin/$CURRENT_BRANCH..."
+# Verificar si estamos desactualizados
+LOCAL=$(git rev-parse HEAD)
+REMOTE=$(git rev-parse origin/$CURRENT_BRANCH)
+
+if [ "$LOCAL" != "$REMOTE" ]; then
+    echo "Sincronizando con origin/$CURRENT_BRANCH..."
+
+    # Descartar cambios locales y sincronizar
     git reset --hard origin/$CURRENT_BRANCH
+    git clean -fd  # Limpiar archivos no trackeados
 
     echo "✅ Sync completado exitosamente"
-
-    # Aplicar stash si había cambios guardados
-    if git stash list | grep -q "Auto-stash antes de sync"; then
-        echo "Reaplicando cambios locales guardados..."
-        git stash pop || echo "⚠️  No se pudieron reaplicar los cambios locales"
-    fi
+else
+    echo "✅ Ya estás actualizado con origin/$CURRENT_BRANCH"
 fi
 
 echo ""
