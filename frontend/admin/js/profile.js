@@ -339,6 +339,7 @@ window.startCamera = async function() {
   try {
     const video = document.getElementById('faceVideo');
     const placeholder = document.getElementById('facePlaceholder');
+    const faceGuide = document.getElementById('faceGuide');
     const startBtn = document.getElementById('startCameraBtn');
     const captureBtn = document.getElementById('captureFaceBtn');
     const stopBtn = document.getElementById('stopCameraBtn');
@@ -355,14 +356,17 @@ window.startCamera = async function() {
 
     video.srcObject = videoStream;
 
-    // Show video, hide placeholder
+    // Show video and face guide, hide placeholder
     placeholder.style.display = 'none';
     video.style.display = 'block';
+    faceGuide.classList.remove('hidden');
 
     // Update buttons
     startBtn.style.display = 'none';
-    captureBtn.style.display = 'inline-block';
-    stopBtn.style.display = 'inline-block';
+    captureBtn.style.display = 'inline-flex';
+    captureBtn.classList.remove('hidden');
+    stopBtn.style.display = 'inline-flex';
+    stopBtn.classList.remove('hidden');
 
   } catch (error) {
     console.error('Error accessing camera:', error);
@@ -383,6 +387,7 @@ window.stopCamera = function() {
   const video = document.getElementById('faceVideo');
   const canvas = document.getElementById('faceCanvas');
   const placeholder = document.getElementById('facePlaceholder');
+  const faceGuide = document.getElementById('faceGuide');
   const startBtn = document.getElementById('startCameraBtn');
   const captureBtn = document.getElementById('captureFaceBtn');
   const stopBtn = document.getElementById('stopCameraBtn');
@@ -390,10 +395,13 @@ window.stopCamera = function() {
   video.style.display = 'none';
   canvas.style.display = 'none';
   placeholder.style.display = 'flex';
+  faceGuide.classList.add('hidden');
 
-  startBtn.style.display = 'inline-block';
+  startBtn.style.display = 'inline-flex';
   captureBtn.style.display = 'none';
+  captureBtn.classList.add('hidden');
   stopBtn.style.display = 'none';
+  stopBtn.classList.add('hidden');
 };
 
 // Capture face and register
