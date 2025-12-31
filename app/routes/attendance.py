@@ -1,14 +1,17 @@
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import and_, select
+from fastapi import APIRouter, Depends, HTTPException, Query, File, UploadFile, Form
+from sqlalchemy import and_, select, func
 from sqlalchemy.ext.asyncio import AsyncSession
+import logging
 
 from .. import schemas
 from ..dependencies import get_current_user
-from ..models import AttendanceRecord, QRCode, User
+from ..models import AttendanceRecord, QRCode, User, BiometricData
 from ..utils.email import build_attendance_alert, send_email
 from ..database import get_db
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/attendance", tags=["attendance"])
 
@@ -79,6 +82,125 @@ async def scan_attendance(payload: schemas.AttendanceCreate, db: AsyncSession = 
         await send_email(subject, recipient, "Alerta de asistencia", html)
 
     return record
+
+
+@router.post("/biometric-scan", response_model=schemas.AttendanceOut)
+async def biometric_scan(
+    image: UploadFile = File(...),
+    action: str = Form(default="auto"),
+    location: str = Form(default=None),
+    notes: str = Form(default=None),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Registrar asistencia usando reconocimiento facial
+    """
+    # Try to import face recognition
+    try:
+        from ..utils.face_recognition import extract_face_embedding, compare_faces
+    except ImportError:
+        raise HTTPException(
+            status_code=503,
+            detail="Reconocimiento facial no disponible. Las dependencias no están instaladas."
+        )
+
+    try:
+        # Read image data
+        image_data = await image.read()
+
+        # Extract face embedding from uploaded image
+        uploaded_embedding = await extract_face_embedding(image_data)
+
+        # Get all registered face embeddings
+        result = await db.execute(
+            select(BiometricData, User)
+            .join(User, BiometricData.user_id == User.id)
+            .where(BiometricData.biometric_type == "face")
+            .where(User.is_active == True)
+        )
+        registered_faces = result.all()
+
+        if not registered_faces:
+            raise HTTPException(
+                status_code=404,
+                detail="No hay rostros registrados en el sistema"
+            )
+
+        # Find matching user
+        matched_user = None
+        for biometric, user in registered_faces:
+            try:
+                is_match = compare_faces(uploaded_embedding, biometric.biometric_hash)
+                if is_match:
+                    matched_user = user
+                    # Update last verified
+                    biometric.last_verified_at = datetime.utcnow()
+                    break
+            except Exception as e:
+                logger.warning(f"Error comparing faces for user {user.email}: {e}")
+                continue
+
+        if not matched_user:
+            raise HTTPException(
+                status_code=404,
+                detail="Rostro no reconocido. Por favor registra tu rostro primero."
+            )
+
+        # Same logic as /scan endpoint - detect check-in or check-out
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+
+        last_result = await db.execute(
+            select(AttendanceRecord)
+            .where(and_(
+                AttendanceRecord.user_id == matched_user.id,
+                AttendanceRecord.check_out.is_(None)
+            ))
+            .order_by(AttendanceRecord.check_in.desc())
+            .limit(1)
+        )
+        open_record = last_result.scalar_one_or_none()
+
+        if open_record:
+            # Already checked in → register CHECK-OUT
+            open_record.check_out = now
+            open_record.notes = notes or open_record.notes
+            await db.commit()
+            await db.refresh(open_record)
+            record = open_record
+        else:
+            # No open check-in → register CHECK-IN
+            status = await _status_for_check_in(matched_user, now)
+            record = AttendanceRecord(
+                user_id=matched_user.id,
+                check_in=now,
+                status=status,
+                location=location,
+                notes=notes,
+                shift_id=matched_user.shift_id,
+            )
+            db.add(record)
+            await db.commit()
+            await db.refresh(record)
+
+        # Send notification if enabled
+        if matched_user.notification_preferences.get("attendance", True):
+            subject, recipient, html = build_attendance_alert(
+                matched_user.email,
+                record.status,
+                notes
+            )
+            await send_email(subject, recipient, "Alerta de asistencia", html)
+
+        return record
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in biometric scan: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error procesando reconocimiento facial: {str(e)}"
+        )
 
 
 @router.get("/me", response_model=list[schemas.AttendanceOut])
