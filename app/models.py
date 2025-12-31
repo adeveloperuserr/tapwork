@@ -160,7 +160,7 @@ class AuditLog(Base):
     __tablename__ = "audit_logs"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=default_uuid)
-    user_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"))
+    user_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"))
     action: Mapped[str] = mapped_column(String(50), nullable=False)
     resource: Mapped[str] = mapped_column(String(50), nullable=False)
     changes: Mapped[dict | None] = mapped_column(JSONB, nullable=True)

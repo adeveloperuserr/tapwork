@@ -165,6 +165,26 @@ async def create_role(payload: schemas.RoleCreate, db: AsyncSession = Depends(ge
     return role
 
 
+@router.patch("/roles/{role_id}", response_model=schemas.RoleOut)
+async def update_role(role_id: uuid.UUID, payload: schemas.RoleUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Role).where(Role.id == role_id))
+    role = result.scalar_one_or_none()
+    if not role:
+        raise HTTPException(status_code=404, detail="Rol no encontrado")
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(role, field, value)
+    await db.commit()
+    await db.refresh(role)
+    return role
+
+
+@router.delete("/roles/{role_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_role(role_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    await db.execute(delete(Role).where(Role.id == role_id))
+    await db.commit()
+    return {"detail": "deleted"}
+
+
 @router.get("/departments", response_model=list[schemas.DepartmentOut])
 async def list_departments(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Department))
