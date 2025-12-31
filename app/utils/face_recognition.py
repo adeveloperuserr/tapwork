@@ -35,10 +35,10 @@ DISTANCE_METRIC = "cosine"  # cosine, euclidean, euclidean_l2
 DETECTOR_BACKEND = "retinaface"  # opencv, ssd, dlib, mtcnn, retinaface, mediapipe
 VERIFICATION_THRESHOLD = 0.50  # Threshold para Facenet512 con cosine (más bajo = más estricto)
 
-# Configuración de calidad de imagen (ajustado para cámaras de laptop)
+# Configuración de calidad de imagen (MUY relajado para cámaras de laptop)
 MIN_RESOLUTION = 160  # Resolución mínima (era 200)
-MIN_SHARPNESS = 30  # Nitidez mínima (era 100)
-QUALITY_THRESHOLD = 0.35  # Calidad general mínima (era 0.6)
+MIN_SHARPNESS = 10  # Nitidez mínima - MUY relajado para webcams (era 30, antes 100)
+QUALITY_THRESHOLD = 0.25  # Calidad general mínima - relajado para webcams (era 0.35, antes 0.6)
 
 
 class FaceRecognitionError(Exception):
@@ -128,25 +128,32 @@ def check_image_quality(image: Any) -> Tuple[bool, float]:
 
     # 2. Verificar nitidez usando Laplacian variance
     laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
-    sharpness_score = min(laplacian_var / 300.0, 1.0)  # Normalizar (reducido de 500)
+    sharpness_score = min(laplacian_var / 150.0, 1.0)  # MUY tolerante para webcams (reducido de 300)
 
-    # 3. Verificar brillo (más tolerante)
+    # 3. Verificar brillo (muy tolerante)
     mean_brightness = np.mean(gray)
-    brightness_score = 1.0 - abs(mean_brightness - 128) / 200  # Más tolerante (era 128)
+    brightness_score = 1.0 - abs(mean_brightness - 128) / 200  # Muy tolerante
 
-    # 4. Verificar contraste (más tolerante)
+    # 4. Verificar contraste (muy tolerante)
     contrast = gray.std()
-    contrast_score = min(contrast / 50.0, 1.0)  # Más tolerante (era 64)
+    contrast_score = min(contrast / 40.0, 1.0)  # Más tolerante (reducido de 50)
 
-    # Calcular puntaje final (ponderado)
+    # Calcular puntaje final (ponderado) - menos peso en nitidez
     quality_score = (
-        sharpness_score * 0.4 +  # Reducido peso de nitidez
-        brightness_score * 0.3 +
-        contrast_score * 0.3     # Aumentado peso de contraste
+        sharpness_score * 0.3 +  # REDUCIDO: Menor peso de nitidez para webcams
+        brightness_score * 0.35 +  # Aumentado
+        contrast_score * 0.35     # Aumentado
     )
 
-    # Threshold de calidad mínima (ajustado para cámaras de laptop)
+    # Threshold de calidad mínima (MUY relajado para cámaras de laptop)
     is_good_quality = quality_score >= QUALITY_THRESHOLD and laplacian_var >= MIN_SHARPNESS
+
+    # Log detallado para debugging
+    logger.info(
+        f"Image quality check: score={quality_score:.2f}, laplacian={laplacian_var:.2f}, "
+        f"sharpness={sharpness_score:.2f}, brightness={brightness_score:.2f}, "
+        f"contrast={contrast_score:.2f}, passed={is_good_quality}"
+    )
 
     return is_good_quality, quality_score
 
@@ -171,10 +178,11 @@ def perform_liveness_detection(image: Any) -> Tuple[bool, str]:
     gradient_magnitude = np.sqrt(sobelx**2 + sobely**2)
     texture_variance = np.var(gradient_magnitude)
 
-    # Threshold muy bajo para ser tolerante con cámaras de laptop
-    if texture_variance < 20:
+    # Threshold MUY bajo para ser tolerante con cámaras de laptop
+    if texture_variance < 5:  # Reducido de 20 para webcams de baja calidad
         return False, "Imagen muy uniforme. Asegúrate de que tu rostro esté bien iluminado"
 
+    logger.debug(f"Liveness detection: texture_variance={texture_variance:.2f}")
     return True, "Validación completada"
 
 
