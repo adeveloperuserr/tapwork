@@ -328,3 +328,56 @@ async def verify_face(image_base64: str, stored_embedding: bytes) -> Tuple[bool,
     except Exception as e:
         logger.error(f"Error verifying face: {e}")
         raise FaceRecognitionError(f"Error verificando rostro: {str(e)}")
+
+
+def compare_faces(embedding1: bytes, embedding2: bytes) -> bool:
+    """
+    Compara dos embeddings faciales directamente
+
+    Args:
+        embedding1: Primer embedding facial (bytes)
+        embedding2: Segundo embedding facial (bytes)
+
+    Returns:
+        bool: True si los rostros coinciden
+
+    Raises:
+        FaceRecognitionError: Si hay un error en la comparación
+    """
+    try:
+        # Importar numpy
+        np, _, _ = _import_dependencies()
+
+        # Convertir bytes a arrays numpy
+        emb1 = np.frombuffer(embedding1, dtype=np.float32)
+        emb2 = np.frombuffer(embedding2, dtype=np.float32)
+
+        # Calcular distancia según la métrica configurada
+        if DISTANCE_METRIC == "cosine":
+            # Distancia coseno: 1 - similaridad
+            from sklearn.metrics.pairwise import cosine_similarity
+            similarity = cosine_similarity(
+                emb1.reshape(1, -1),
+                emb2.reshape(1, -1)
+            )[0][0]
+            distance = 1 - similarity
+        elif DISTANCE_METRIC == "euclidean":
+            distance = np.linalg.norm(emb1 - emb2)
+        elif DISTANCE_METRIC == "euclidean_l2":
+            distance = np.sqrt(np.sum((emb1 - emb2) ** 2))
+        else:
+            distance = np.linalg.norm(emb1 - emb2)
+
+        # Verificar si la distancia está dentro del threshold
+        is_match = distance <= VERIFICATION_THRESHOLD
+
+        logger.debug(
+            f"Face comparison: match={is_match}, distance={distance:.4f}, "
+            f"threshold={VERIFICATION_THRESHOLD}"
+        )
+
+        return is_match
+
+    except Exception as e:
+        logger.error(f"Error comparing face embeddings: {e}")
+        raise FaceRecognitionError(f"Error comparando rostros: {str(e)}")
