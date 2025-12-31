@@ -239,30 +239,47 @@ window.showSection = function(section) {
   document.getElementById('barcodeSection').classList.add('section-hidden');
   document.getElementById('attendanceSection').classList.add('section-hidden');
 
-  // Remove active from all nav buttons
+  // Remove active state from all nav buttons
   document.querySelectorAll('.profile-nav-btn').forEach(btn => {
-    btn.classList.remove('active');
+    btn.classList.remove('bg-primary-600', 'border-primary-600', 'shadow-lg');
+    btn.classList.add('bg-white', 'border-transparent');
+    btn.querySelectorAll('svg, span').forEach(child => {
+      child.classList.remove('text-primary-700', 'text-white');
+      child.classList.add('text-gray-600', 'group-hover:text-primary-600');
+    });
   });
 
-  // Show selected section and activate button
+  // Show selected section and set active button
   const buttons = document.querySelectorAll('.profile-nav-btn');
+  let activeButton = null;
+
   if (section === 'profile') {
     document.getElementById('profileSection').classList.remove('section-hidden');
-    buttons[0].classList.add('active');
+    activeButton = buttons[0];
   } else if (section === 'password') {
     document.getElementById('passwordSection').classList.remove('section-hidden');
-    buttons[1].classList.add('active');
+    activeButton = buttons[1];
   } else if (section === 'face') {
     document.getElementById('faceSection').classList.remove('section-hidden');
-    buttons[2].classList.add('active');
+    activeButton = buttons[2];
     loadFaceStatus();
   } else if (section === 'barcode') {
     document.getElementById('barcodeSection').classList.remove('section-hidden');
-    buttons[3].classList.add('active');
+    activeButton = buttons[3];
   } else if (section === 'attendance') {
     document.getElementById('attendanceSection').classList.remove('section-hidden');
-    buttons[4].classList.add('active');
+    activeButton = buttons[4];
     loadAttendance();
+  }
+
+  // Apply active state to the selected button
+  if (activeButton) {
+    activeButton.classList.add('bg-primary-600', 'border-primary-600', 'shadow-lg');
+    activeButton.classList.remove('bg-white', 'border-transparent');
+    activeButton.querySelectorAll('svg, span').forEach(child => {
+      child.classList.add('text-white');
+      child.classList.remove('text-gray-600', 'group-hover:text-primary-600');
+    });
   }
 };
 

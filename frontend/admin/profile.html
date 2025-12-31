@@ -476,48 +476,5 @@
 
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script src="js/profile.js"></script>
-
-  <script>
-    // Section navigation
-    function showSection(section) {
-      // Hide all sections
-      document.querySelectorAll('[id$="Section"]').forEach(el => {
-        el.classList.add('section-hidden');
-      });
-
-      // Remove active state from all nav buttons
-      document.querySelectorAll('.profile-nav-btn').forEach(btn => {
-        btn.classList.remove('bg-primary-600', 'border-primary-600', 'shadow-lg');
-        btn.classList.add('bg-white', 'border-transparent');
-        btn.querySelectorAll('svg, span').forEach(child => {
-          child.classList.remove('text-primary-700', 'text-white');
-          child.classList.add('text-gray-600', 'group-hover:text-primary-600');
-        });
-      });
-
-      // Show selected section
-      const sectionId = section + 'Section';
-      document.getElementById(sectionId).classList.remove('section-hidden');
-
-      // Set active state on clicked button
-      const buttons = document.querySelectorAll('.profile-nav-btn');
-      const sectionMap = {
-        'profile': 0,
-        'password': 1,
-        'face': 2,
-        'barcode': 3,
-        'attendance': 4
-      };
-      const activeButton = buttons[sectionMap[section]];
-      if (activeButton) {
-        activeButton.classList.add('bg-primary-600', 'border-primary-600', 'shadow-lg');
-        activeButton.classList.remove('bg-white', 'border-transparent');
-        activeButton.querySelectorAll('svg, span').forEach(child => {
-          child.classList.add('text-white');
-          child.classList.remove('text-gray-600', 'group-hover:text-primary-600');
-        });
-      }
-    }
-  </script>
 </body>
 </html>
