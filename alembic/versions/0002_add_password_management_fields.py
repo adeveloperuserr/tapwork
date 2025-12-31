@@ -1,7 +1,7 @@
 """add password management fields
 
 Revision ID: 0002
-Revises: 0001
+Revises: 0001_initial
 Create Date: 2025-12-28
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '0002'
-down_revision = '0001'
+down_revision = '0001_initial'
 branch_labels = None
 depends_on = None
 
