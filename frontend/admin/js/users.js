@@ -283,8 +283,8 @@ async function confirmDelete() {
       throw new Error(error.detail || 'Error al eliminar usuario');
     }
 
-    // Success notification - using a simple alert for now
-    alert(`Usuario ${userToDelete.name} eliminado exitosamente`);
+    // Success notification
+    showToast(`Usuario ${userToDelete.name} eliminado exitosamente`, 'success');
 
     // Reset state
     userToDelete = { id: null, name: null };
@@ -292,7 +292,7 @@ async function confirmDelete() {
     // Reload table
     loadAllData();
   } catch (error) {
-    alert(`Error: ${error.message}`);
+    showToast(`Error: ${error.message}`, 'error');
     userToDelete = { id: null, name: null };
   }
 }
@@ -319,7 +319,7 @@ window.viewBarcode = async function(userId, employeeId) {
 
     barcodeModal.classList.remove('hidden');
   } catch (error) {
-    alert(`Error: ${error.message}`);
+    showToast(`Error: ${error.message}`, 'error');
   }
 };
 
@@ -438,6 +438,45 @@ deleteModal.addEventListener('click', (e) => {
     userToDelete = { id: null, name: null };
   }
 });
+
+// Toast notification system
+function showToast(message, type = 'success') {
+  // Remove any existing toast
+  const existingToast = document.getElementById('toast-notification');
+  if (existingToast) existingToast.remove();
+
+  // Create toast element
+  const toast = document.createElement('div');
+  toast.id = 'toast-notification';
+  toast.className = `fixed bottom-4 right-4 px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 z-50 ${
+    type === 'success' ? 'bg-green-500 text-white' :
+    type === 'error' ? 'bg-red-500 text-white' :
+    'bg-blue-500 text-white'
+  }`;
+
+  toast.innerHTML = `
+    <div class="flex items-center gap-3">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        ${type === 'success' ?
+          '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>' :
+          '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>'
+        }
+      </svg>
+      <span class="font-medium">${message}</span>
+    </div>
+  `;
+
+  document.body.appendChild(toast);
+
+  // Animate in
+  setTimeout(() => toast.style.transform = 'translateX(0)', 10);
+
+  // Auto remove after 4 seconds
+  setTimeout(() => {
+    toast.style.transform = 'translateX(400px)';
+    setTimeout(() => toast.remove(), 300);
+  }, 4000);
+}
 
 // Initialize
 loadUserInfo();
