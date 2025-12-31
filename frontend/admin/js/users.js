@@ -31,8 +31,6 @@ const closeModal = document.getElementById('closeModal');
 const cancelBtn = document.getElementById('cancelBtn');
 const saveBtn = document.getElementById('saveBtn');
 const modalTitle = document.getElementById('modalTitle');
-const formError = document.getElementById('formError');
-const formSuccess = document.getElementById('formSuccess');
 const logoutBtn = document.getElementById('logoutBtn');
 const barcodeModal = document.getElementById('barcodeModal');
 const closeBarcodeModal = document.getElementById('closeBarcodeModal');
@@ -218,6 +216,10 @@ function openNewUserModal() {
   userForm.reset();
   document.getElementById('userId').value = '';
 
+  // Mostrar notificación de password, ocultar toggle de estado
+  document.getElementById('passwordNotice').classList.remove('hidden');
+  document.getElementById('statusToggleContainer').classList.add('hidden');
+
   // Reset button state and update text for create mode
   saveBtn.disabled = false;
   saveBtn.querySelector('.btn-text').textContent = 'Guardar Usuario';
@@ -225,8 +227,6 @@ function openNewUserModal() {
   saveBtn.querySelector('.btn-loader').innerHTML = '<span class="spinner"></span> Guardando...';
   saveBtn.querySelector('.btn-loader').classList.add('hidden');
 
-  formError.classList.add('hidden');
-  formSuccess.classList.add('hidden');
   userModal.classList.remove('hidden');
 }
 
@@ -246,6 +246,11 @@ window.editUser = async function(userId) {
   document.getElementById('roleId').value = user.role_id || '';
   document.getElementById('departmentId').value = user.department_id || '';
   document.getElementById('shiftId').value = user.shift_id || '';
+  document.getElementById('isActive').checked = user.is_active;
+
+  // Ocultar notificación de password, mostrar toggle de estado
+  document.getElementById('passwordNotice').classList.add('hidden');
+  document.getElementById('statusToggleContainer').classList.remove('hidden');
 
   // Reset button state and update text for edit mode
   saveBtn.disabled = false;
@@ -254,8 +259,6 @@ window.editUser = async function(userId) {
   saveBtn.querySelector('.btn-loader').innerHTML = '<span class="spinner"></span> Actualizando...';
   saveBtn.querySelector('.btn-loader').classList.add('hidden');
 
-  formError.classList.add('hidden');
-  formSuccess.classList.add('hidden');
   userModal.classList.remove('hidden');
 };
 
@@ -327,9 +330,6 @@ window.viewBarcode = async function(userId, employeeId) {
 userForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  formError.classList.add('hidden');
-  formSuccess.classList.add('hidden');
-
   const userId = document.getElementById('userId').value;
   const formData = {
     first_name: document.getElementById('firstName').value,
@@ -346,7 +346,10 @@ userForm.addEventListener('submit', async (e) => {
     }
   };
 
-  // No se envía password - el sistema lo genera automáticamente
+  // Agregar is_active solo en modo edición
+  if (isEditMode) {
+    formData.is_active = document.getElementById('isActive').checked;
+  }
 
   // Loading state
   saveBtn.disabled = true;
@@ -377,18 +380,14 @@ userForm.addEventListener('submit', async (e) => {
       throw new Error(data.detail || 'Error al guardar usuario');
     }
 
-    // Success
-    formSuccess.textContent = isEditMode ? 'Usuario actualizado exitosamente' : 'Usuario creado exitosamente';
-    formSuccess.classList.remove('hidden');
+    // Success con toast
+    showToast(isEditMode ? 'Usuario actualizado exitosamente' : 'Usuario creado exitosamente', 'success');
 
-    // Reload data after 1 second
-    setTimeout(() => {
-      userModal.classList.add('hidden');
-      loadAllData();
-    }, 1000);
+    // Close modal y reload data
+    userModal.classList.add('hidden');
+    loadAllData();
   } catch (error) {
-    formError.textContent = error.message;
-    formError.classList.remove('hidden');
+    showToast(error.message, 'error');
 
     // Reset button
     saveBtn.disabled = false;
