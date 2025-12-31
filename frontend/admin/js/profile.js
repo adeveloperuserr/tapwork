@@ -167,19 +167,28 @@ document.getElementById('passwordForm').addEventListener('submit', async (e) => 
 
 // Load attendance history
 async function loadAttendance() {
+  const tbody = document.getElementById('attendanceTable');
+
   try {
+    console.log('Loading attendance history...');
+
     const res = await fetch(`${API_BASE}/api/user/attendance-history`, {
       headers: authHeaders
     });
 
-    if (!res.ok) throw new Error('Error al cargar asistencias');
+    console.log('Response status:', res.status);
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      console.error('Error response:', errorData);
+      throw new Error(errorData.detail || 'Error al cargar asistencias');
+    }
 
     const records = await res.json();
-
-    const tbody = document.getElementById('attendanceTable');
+    console.log('Attendance records:', records);
 
     if (records.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; color: #6b7280;">No hay registros de asistencia en los últimos 30 días</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; color: #6b7280;">📅 No hay registros de asistencia en los últimos 30 días</td></tr>';
       return;
     }
 
@@ -196,18 +205,23 @@ async function loadAttendance() {
       }
 
       return `
-        <tr>
-          <td><strong>${checkIn.toLocaleDateString('es-MX', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</strong></td>
-          <td>${checkIn.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</td>
-          <td>${checkOut ? checkOut.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '<span style="color: #ef4444;">Sin salida</span>'}</td>
-          <td><strong>${hoursWorked}</strong></td>
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="px-6 py-4 whitespace-nowrap"><strong>${checkIn.toLocaleDateString('es-MX', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</strong></td>
+          <td class="px-6 py-4 whitespace-nowrap">${checkIn.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</td>
+          <td class="px-6 py-4 whitespace-nowrap">${checkOut ? checkOut.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '<span style="color: #ef4444;">Sin salida</span>'}</td>
+          <td class="px-6 py-4 whitespace-nowrap"><strong>${hoursWorked}</strong></td>
         </tr>
       `;
     }).join('');
+
+    console.log('Attendance loaded successfully');
   } catch (error) {
     console.error('Error loading attendance:', error);
-    document.getElementById('attendanceTable').innerHTML =
-      '<tr><td colspan="4" style="text-align: center; padding: 40px; color: #ef4444;">❌ Error al cargar asistencias</td></tr>';
+    tbody.innerHTML =
+      `<tr><td colspan="4" style="text-align: center; padding: 40px; color: #ef4444;">
+        ❌ Error al cargar asistencias<br>
+        <span style="font-size: 0.875rem; color: #6b7280;">${error.message}</span>
+      </td></tr>`;
   }
 }
 
