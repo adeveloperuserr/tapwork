@@ -227,6 +227,8 @@ async function loadAttendance() {
 
 // Show section
 window.showSection = function(section) {
+  console.log('showSection called with:', section);
+
   // Stop camera if switching away from face section
   if (videoStream && section !== 'face') {
     stopCamera();
