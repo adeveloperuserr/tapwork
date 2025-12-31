@@ -327,11 +327,42 @@ logoutBtn.addEventListener('click', () => {
 });
 
 // Utility functions
+function showToast(message, type = 'success') {
+  const existingToast = document.getElementById('toast-notification');
+  if (existingToast) existingToast.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'toast-notification';
+  toast.className = `fixed bottom-4 right-4 px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 z-50 ${
+    type === 'success' ? 'bg-green-500 text-white' :
+    type === 'error' ? 'bg-red-500 text-white' :
+    'bg-blue-500 text-white'
+  }`;
+
+  toast.innerHTML = `
+    <div class="flex items-center gap-3">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        ${type === 'success' ?
+          '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>' :
+          '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>'
+        }
+      </svg>
+      <span class="font-medium">${message}</span>
+    </div>
+  `;
+
+  document.body.appendChild(toast);
+  setTimeout(() => toast.style.transform = 'translateX(0)', 10);
+  setTimeout(() => {
+    toast.style.transform = 'translateX(400px)';
+    setTimeout(() => toast.remove(), 300);
+  }, 4000);
+}
+
 function showSuccess(message) {
-    // Simple alert for now - could be improved with toast notifications
-    alert(message);
+    showToast(message, 'success');
 }
 
 function showError(message) {
-    alert('Error: ' + message);
+    showToast('Error: ' + message, 'error');
 }
