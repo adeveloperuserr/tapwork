@@ -167,19 +167,28 @@ document.getElementById('passwordForm').addEventListener('submit', async (e) => 
 
 // Load attendance history
 async function loadAttendance() {
+  const tbody = document.getElementById('attendanceTable');
+
   try {
+    console.log('Loading attendance history...');
+
     const res = await fetch(`${API_BASE}/api/user/attendance-history`, {
       headers: authHeaders
     });
 
-    if (!res.ok) throw new Error('Error al cargar asistencias');
+    console.log('Response status:', res.status);
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      console.error('Error response:', errorData);
+      throw new Error(errorData.detail || 'Error al cargar asistencias');
+    }
 
     const records = await res.json();
-
-    const tbody = document.getElementById('attendanceTable');
+    console.log('Attendance records:', records);
 
     if (records.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; color: #6b7280;">No hay registros de asistencia en los últimos 30 días</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; color: #6b7280;">📅 No hay registros de asistencia en los últimos 30 días</td></tr>';
       return;
     }
 
@@ -196,23 +205,30 @@ async function loadAttendance() {
       }
 
       return `
-        <tr>
-          <td><strong>${checkIn.toLocaleDateString('es-MX', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</strong></td>
-          <td>${checkIn.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</td>
-          <td>${checkOut ? checkOut.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '<span style="color: #ef4444;">Sin salida</span>'}</td>
-          <td><strong>${hoursWorked}</strong></td>
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="px-6 py-4 whitespace-nowrap"><strong>${checkIn.toLocaleDateString('es-MX', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</strong></td>
+          <td class="px-6 py-4 whitespace-nowrap">${checkIn.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</td>
+          <td class="px-6 py-4 whitespace-nowrap">${checkOut ? checkOut.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '<span style="color: #ef4444;">Sin salida</span>'}</td>
+          <td class="px-6 py-4 whitespace-nowrap"><strong>${hoursWorked}</strong></td>
         </tr>
       `;
     }).join('');
+
+    console.log('Attendance loaded successfully');
   } catch (error) {
     console.error('Error loading attendance:', error);
-    document.getElementById('attendanceTable').innerHTML =
-      '<tr><td colspan="4" style="text-align: center; padding: 40px; color: #ef4444;">❌ Error al cargar asistencias</td></tr>';
+    tbody.innerHTML =
+      `<tr><td colspan="4" style="text-align: center; padding: 40px; color: #ef4444;">
+        ❌ Error al cargar asistencias<br>
+        <span style="font-size: 0.875rem; color: #6b7280;">${error.message}</span>
+      </td></tr>`;
   }
 }
 
 // Show section
 window.showSection = function(section) {
+  console.log('showSection called with:', section);
+
   // Stop camera if switching away from face section
   if (videoStream && section !== 'face') {
     stopCamera();
@@ -225,30 +241,47 @@ window.showSection = function(section) {
   document.getElementById('barcodeSection').classList.add('section-hidden');
   document.getElementById('attendanceSection').classList.add('section-hidden');
 
-  // Remove active from all nav buttons
+  // Remove active state from all nav buttons
   document.querySelectorAll('.profile-nav-btn').forEach(btn => {
-    btn.classList.remove('active');
+    btn.classList.remove('bg-primary-600', 'border-primary-600', 'shadow-lg');
+    btn.classList.add('bg-white', 'border-transparent');
+    btn.querySelectorAll('svg, span').forEach(child => {
+      child.classList.remove('text-primary-700', 'text-white');
+      child.classList.add('text-gray-600', 'group-hover:text-primary-600');
+    });
   });
 
-  // Show selected section and activate button
+  // Show selected section and set active button
   const buttons = document.querySelectorAll('.profile-nav-btn');
+  let activeButton = null;
+
   if (section === 'profile') {
     document.getElementById('profileSection').classList.remove('section-hidden');
-    buttons[0].classList.add('active');
+    activeButton = buttons[0];
   } else if (section === 'password') {
     document.getElementById('passwordSection').classList.remove('section-hidden');
-    buttons[1].classList.add('active');
+    activeButton = buttons[1];
   } else if (section === 'face') {
     document.getElementById('faceSection').classList.remove('section-hidden');
-    buttons[2].classList.add('active');
+    activeButton = buttons[2];
     loadFaceStatus();
   } else if (section === 'barcode') {
     document.getElementById('barcodeSection').classList.remove('section-hidden');
-    buttons[3].classList.add('active');
+    activeButton = buttons[3];
   } else if (section === 'attendance') {
     document.getElementById('attendanceSection').classList.remove('section-hidden');
-    buttons[4].classList.add('active');
+    activeButton = buttons[4];
     loadAttendance();
+  }
+
+  // Apply active state to the selected button
+  if (activeButton) {
+    activeButton.classList.add('bg-primary-600', 'border-primary-600', 'shadow-lg');
+    activeButton.classList.remove('bg-white', 'border-transparent');
+    activeButton.querySelectorAll('svg, span').forEach(child => {
+      child.classList.add('text-white');
+      child.classList.remove('text-gray-600', 'group-hover:text-primary-600');
+    });
   }
 };
 
