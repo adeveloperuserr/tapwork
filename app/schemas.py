@@ -16,6 +16,12 @@ class RoleCreate(RoleBase):
     pass
 
 
+class RoleUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    permissions: dict[str, list[str]] | None = None
+
+
 class RoleOut(RoleBase):
     id: uuid.UUID
     created_at: datetime
