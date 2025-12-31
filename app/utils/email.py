@@ -58,11 +58,69 @@ def build_verification_email(email: str, token: str) -> tuple[str, str, str]:
 
 
 def build_reset_email(email: str, token: str) -> tuple[str, str, str]:
-    link = f"{settings.frontend_base_url}/reset-password?token={token}"
-    subject = "Restablecer contraseña"
-    body = f"Para restablecer tu contraseña usa el siguiente enlace: {link}"
-    html = f"<p>Para restablecer tu contraseña, usa <a href='{link}'>este enlace</a>.</p>"
-    return subject, email, html if html else body
+    # Usar api_base_url ya que el frontend está en el mismo servidor
+    base_url = settings.api_base_url
+    link = f"{base_url}/reset-password.html?token={token}"
+    subject = "Restablecer contraseña - Tapwork"
+    body = f"""Hola,
+
+Has solicitado restablecer tu contraseña en Tapwork.
+
+Para continuar, haz clic en el siguiente enlace:
+{link}
+
+Este enlace expirará en 1 hora por seguridad.
+
+Si no solicitaste este cambio, puedes ignorar este correo.
+
+Saludos,
+El equipo de Tapwork"""
+
+    html = f"""
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+            .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+            .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+            .button {{ display: inline-block; padding: 15px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }}
+            .warning {{ background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }}
+            .footer {{ text-align: center; margin-top: 20px; color: #666; font-size: 12px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>Restablecer Contraseña</h1>
+            </div>
+            <div class="content">
+                <p>Hola,</p>
+                <p>Has solicitado restablecer tu contraseña en <strong>Tapwork</strong>.</p>
+                <p>Para continuar, haz clic en el siguiente botón:</p>
+
+                <div style="text-align: center;">
+                    <a href="{link}" class="button">Restablecer Contraseña</a>
+                </div>
+
+                <div class="warning">
+                    <strong>⚠️ Importante:</strong> Este enlace expirará en <strong>1 hora</strong> por seguridad.
+                </div>
+
+                <p>Si no solicitaste este cambio, puedes ignorar este correo de forma segura.</p>
+
+                <p>Saludos,<br><strong>El equipo de Tapwork</strong></p>
+            </div>
+            <div class="footer">
+                <p>Este es un mensaje automático, por favor no responder.</p>
+                <p>Si tienes problemas con el botón, copia y pega este enlace en tu navegador:</p>
+                <p style="word-break: break-all; color: #667eea;">{link}</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    return subject, email, html
 
 
 def build_attendance_alert(email: str, status: str, notes: str | None = None) -> tuple[str, str, str]:

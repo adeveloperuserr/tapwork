@@ -310,29 +310,49 @@ def create_token_payload(token: str, expected_type: str) -> dict:
 @router.post("/password-reset")
 @limiter.limit("3/minute")
 async def request_password_reset(request: Request, payload: schemas.PasswordResetRequest, db: AsyncSession = Depends(get_db)):
+    from datetime import datetime, timedelta
+    from ..utils.password import generate_reset_token
+
     result = await db.execute(select(User).where(User.email == payload.email))
     user = result.scalar_one_or_none()
     if not user:
         return {"detail": "Si el correo existe, se enviará un enlace"}
-    reset_token = create_password_reset_token(str(user.id))
+
+    # Generar token y guardarlo en la base de datos
+    reset_token = generate_reset_token()
+    user.password_reset_token = reset_token
+    user.password_reset_expires = datetime.now() + timedelta(hours=1)  # Expira en 1 hora
+
+    await db.commit()
+
     if user.notification_preferences.get("reset", True):
         subject, recipient, html = build_reset_email(user.email, reset_token)
         await send_email(subject, recipient, "Restablecer contraseña", html)
+
     await _log(db, user.id, "REQUEST_RESET", "user", None, ip_address=request.client.host if request.client else None)
     return {"detail": "Si el correo existe, se enviará un enlace"}
 
 
 @router.post("/password-reset/confirm")
 async def confirm_password_reset(request: Request, payload: schemas.PasswordResetConfirm, db: AsyncSession = Depends(get_db)):
-    try:
-        data = create_token_payload(payload.token, expected_type="reset")
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Token inválido")
-    user_id = data.get("sub")
-    result = await db.execute(select(User).where(User.id == uuid.UUID(user_id)))
+    from ..utils.password import is_token_expired
+
+    # Buscar usuario con el token
+    result = await db.execute(
+        select(User).where(User.password_reset_token == payload.token)
+    )
     user = result.scalar_one_or_none()
+
     if not user:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        raise HTTPException(status_code=400, detail="Token inválido o expirado")
+
+    # Verificar si el token ha expirado
+    if is_token_expired(user.password_reset_expires):
+        # Limpiar token expirado
+        user.password_reset_token = None
+        user.password_reset_expires = None
+        await db.commit()
+        raise HTTPException(status_code=400, detail="Token expirado. Solicita un nuevo enlace de recuperación")
 
     # Actualizar contraseña y campos de password management
     user.password_hash = hash_password(payload.new_password)
