@@ -513,12 +513,22 @@ window.deleteFaceRegistration = async function() {
 // ============================================================================
 
 // Logout
+const logoutModal = document.getElementById('logoutModal');
+const cancelLogoutBtn = document.getElementById('cancelLogoutBtn');
+const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
+
 document.getElementById('logoutBtn').addEventListener('click', () => {
-  if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('user');
-    window.location.href = 'login.html';
-  }
+  logoutModal.classList.remove('hidden');
+});
+
+cancelLogoutBtn.addEventListener('click', () => {
+  logoutModal.classList.add('hidden');
+});
+
+confirmLogoutBtn.addEventListener('click', () => {
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('user');
+  window.location.href = 'login.html';
 });
 
 // Toast notification system
