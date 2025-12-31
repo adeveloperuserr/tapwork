@@ -189,6 +189,41 @@
               <video id="faceLoginVideo" width="640" height="480" autoplay class="hidden w-full rounded-lg shadow-inner bg-black"></video>
               <canvas id="faceLoginCanvas" class="hidden"></canvas>
 
+              <!-- Face Guide Overlay - Oval Shape -->
+              <div id="faceGuide" class="hidden absolute inset-0 pointer-events-none rounded-lg overflow-hidden">
+                <svg class="w-full h-full" viewBox="0 0 640 480">
+                  <!-- Dark overlay with hole for face -->
+                  <defs>
+                    <mask id="faceMask">
+                      <rect width="640" height="480" fill="white"/>
+                      <ellipse cx="320" cy="240" rx="140" ry="180" fill="black"/>
+                    </mask>
+                  </defs>
+                  <rect width="640" height="480" fill="rgba(0,0,0,0.6)" mask="url(#faceMask)"/>
+
+                  <!-- Face guide oval with animated border -->
+                  <ellipse cx="320" cy="240" rx="140" ry="180" fill="none" stroke="#60a5fa" stroke-width="4" stroke-dasharray="10 5" class="animate-pulse"/>
+
+                  <!-- Corner guides -->
+                  <line x1="180" y1="60" x2="200" y2="60" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="180" y1="60" x2="180" y2="80" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+
+                  <line x1="460" y1="60" x2="440" y2="60" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="460" y1="60" x2="460" y2="80" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+
+                  <line x1="180" y1="420" x2="200" y2="420" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="180" y1="420" x2="180" y2="400" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+
+                  <line x1="460" y1="420" x2="440" y2="420" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="460" y1="420" x2="460" y2="400" stroke="#60a5fa" stroke-width="3" stroke-linecap="round"/>
+
+                  <!-- Instruction text -->
+                  <text x="320" y="450" text-anchor="middle" fill="#60a5fa" font-size="16" font-weight="600">
+                    Centra tu rostro en el óvalo
+                  </text>
+                </svg>
+              </div>
+
               <div id="facePlaceholder" class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-12 text-center">
                 <svg class="w-20 h-20 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
@@ -354,6 +389,7 @@
     window.startFaceLogin = async function() {
       const video = document.getElementById('faceLoginVideo');
       const placeholder = document.getElementById('facePlaceholder');
+      const faceGuide = document.getElementById('faceGuide');
       const startBtn = document.getElementById('startFaceLoginBtn');
       const verifyBtn = document.getElementById('verifyFaceBtn');
       const stopBtn = document.getElementById('stopFaceLoginBtn');
@@ -373,6 +409,7 @@
 
         placeholder.classList.add('hidden');
         video.classList.remove('hidden');
+        faceGuide.classList.remove('hidden');
 
         startBtn.classList.add('hidden');
         verifyBtn.classList.remove('hidden');
@@ -394,11 +431,13 @@
 
       const video = document.getElementById('faceLoginVideo');
       const placeholder = document.getElementById('facePlaceholder');
+      const faceGuide = document.getElementById('faceGuide');
       const startBtn = document.getElementById('startFaceLoginBtn');
       const verifyBtn = document.getElementById('verifyFaceBtn');
       const stopBtn = document.getElementById('stopFaceLoginBtn');
 
       video.classList.add('hidden');
+      faceGuide.classList.add('hidden');
       placeholder.classList.remove('hidden');
 
       startBtn.classList.remove('hidden');
