@@ -216,8 +216,7 @@ function openNewUserModal() {
   userForm.reset();
   document.getElementById('userId').value = '';
 
-  // Mostrar notificación de password, ocultar toggle de estado
-  document.getElementById('passwordNotice').classList.remove('hidden');
+  // Ocultar toggle de estado (solo para modo edición)
   document.getElementById('statusToggleContainer').classList.add('hidden');
 
   // Reset button state and update text for create mode
@@ -241,15 +240,13 @@ window.editUser = async function(userId) {
   document.getElementById('userId').value = user.id;
   document.getElementById('firstName').value = user.first_name;
   document.getElementById('lastName').value = user.last_name;
-  document.getElementById('employeeId').value = user.employee_id;
   document.getElementById('email').value = user.email;
   document.getElementById('roleId').value = user.role_id || '';
   document.getElementById('departmentId').value = user.department_id || '';
   document.getElementById('shiftId').value = user.shift_id || '';
   document.getElementById('isActive').checked = user.is_active;
 
-  // Ocultar notificación de password, mostrar toggle de estado
-  document.getElementById('passwordNotice').classList.add('hidden');
+  // Mostrar toggle de estado
   document.getElementById('statusToggleContainer').classList.remove('hidden');
 
   // Reset button state and update text for edit mode

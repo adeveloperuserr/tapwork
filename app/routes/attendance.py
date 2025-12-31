@@ -109,11 +109,17 @@ async def biometric_scan(
         )
 
     try:
+        import base64
+
         # Read image data
         image_data = await image.read()
 
+        # Convert bytes to base64 string for face recognition
+        image_base64 = base64.b64encode(image_data).decode('utf-8')
+        image_base64_str = f"data:image/jpeg;base64,{image_base64}"
+
         # Extract face embedding from uploaded image
-        uploaded_embedding = await extract_face_embedding(image_data)
+        uploaded_embedding = await extract_face_embedding(image_base64_str)
 
         # Get all registered face embeddings with eager loading of shift
         result = await db.execute(
