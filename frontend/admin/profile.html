@@ -374,6 +374,16 @@
               <p class="text-xl font-semibold mb-2">Presiona "Activar Cámara" para iniciar</p>
               <p class="text-gray-400 text-center max-w-md">Asegúrate de estar en un lugar bien iluminado y que tu rostro sea claramente visible</p>
             </div>
+
+            <!-- Processing Overlay - Shows in video area -->
+            <div id="faceProcessingOverlay" class="hidden absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl flex flex-col items-center justify-center text-white z-10">
+              <svg class="animate-spin h-16 w-16 text-primary-400 mb-6" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <p class="text-2xl font-bold mb-3">Procesando imagen...</p>
+              <p class="text-gray-400 text-center max-w-md px-4">Analizando calidad, detección de vida y extrayendo características faciales</p>
+            </div>
           </div>
         </div>
 

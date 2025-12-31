@@ -33,7 +33,7 @@ def _import_dependencies():
 FACE_MODEL = "Facenet512"  # Modelo más robusto: VGG-Face, Facenet, Facenet512, OpenFace, DeepFace, DeepID, ArcFace
 DISTANCE_METRIC = "cosine"  # cosine, euclidean, euclidean_l2
 DETECTOR_BACKEND = "retinaface"  # opencv, ssd, dlib, mtcnn, retinaface, mediapipe
-VERIFICATION_THRESHOLD = 0.40  # Threshold para Facenet512 con cosine (más bajo = más estricto)
+VERIFICATION_THRESHOLD = 0.50  # Threshold para Facenet512 con cosine (más bajo = más estricto)
 
 # Configuración de calidad de imagen (ajustado para cámaras de laptop)
 MIN_RESOLUTION = 160  # Resolución mínima (era 200)
@@ -371,9 +371,10 @@ def compare_faces(embedding1: bytes, embedding2: bytes) -> bool:
         # Verificar si la distancia está dentro del threshold
         is_match = distance <= VERIFICATION_THRESHOLD
 
-        logger.debug(
+        # Log con INFO para debugging de problemas de matching
+        logger.info(
             f"Face comparison: match={is_match}, distance={distance:.4f}, "
-            f"threshold={VERIFICATION_THRESHOLD}"
+            f"threshold={VERIFICATION_THRESHOLD}, similarity={(1-distance)*100:.2f}%"
         )
 
         return is_match

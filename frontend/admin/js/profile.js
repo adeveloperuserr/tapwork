@@ -411,7 +411,9 @@ window.captureFace = async function() {
   const ctx = canvas.getContext('2d');
   const errorDiv = document.getElementById('faceError');
   const successDiv = document.getElementById('faceSuccess');
-  const processingDiv = document.getElementById('faceProcessing');
+  const processingOverlay = document.getElementById('faceProcessingOverlay');
+  const faceGuide = document.getElementById('faceGuide');
+  const captureBtn = document.getElementById('captureFaceBtn');
 
   // Hide previous messages
   errorDiv.classList.add('hidden');
@@ -426,8 +428,11 @@ window.captureFace = async function() {
     // Convert canvas to base64
     const imageData = canvas.toDataURL('image/jpeg', 0.95);
 
-    // Show processing indicator
-    processingDiv.style.display = 'block';
+    // IMMEDIATELY stop camera and hide video/controls
+    stopCamera();
+
+    // Show processing overlay in video area
+    processingOverlay.classList.remove('hidden');
 
     // Send to backend
     const res = await fetch(`${API_BASE}/api/biometric/face/register`, {
@@ -440,8 +445,8 @@ window.captureFace = async function() {
 
     const data = await res.json();
 
-    // Hide processing indicator
-    processingDiv.style.display = 'none';
+    // Hide processing overlay
+    processingOverlay.classList.add('hidden');
 
     if (!res.ok) {
       throw new Error(data.detail || 'Error al registrar rostro');
@@ -451,9 +456,6 @@ window.captureFace = async function() {
     successDiv.textContent = '✅ ' + data.message;
     successDiv.classList.remove('hidden');
 
-    // Stop camera
-    stopCamera();
-
     // Reload status
     await loadFaceStatus();
 
@@ -461,7 +463,7 @@ window.captureFace = async function() {
     setTimeout(() => successDiv.classList.add('hidden'), 5000);
 
   } catch (error) {
-    processingDiv.style.display = 'none';
+    processingOverlay.classList.add('hidden');
     errorDiv.textContent = '❌ ' + error.message;
     errorDiv.classList.remove('hidden');
     setTimeout(() => errorDiv.classList.add('hidden'), 8000);

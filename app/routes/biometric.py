@@ -93,7 +93,31 @@ async def register_face(
             db.add(new_biometric)
             logger.info(f"Face embedding registered for user {current_user.email}")
 
-        await db.commit()
+        try:
+            await db.commit()
+        except Exception as commit_error:
+            # Manejar race condition - si otro request ya insertó, actualizar en su lugar
+            if "duplicate key" in str(commit_error).lower() or "unique constraint" in str(commit_error).lower():
+                await db.rollback()
+                logger.warning(f"Race condition detected for user {current_user.email}, retrying as update...")
+
+                # Refrescar y buscar el registro que ya existe
+                existing = await db.scalar(
+                    select(BiometricData).where(
+                        BiometricData.user_id == current_user.id,
+                        BiometricData.biometric_type == "face"
+                    )
+                )
+
+                if existing:
+                    existing.biometric_hash = embedding_bytes
+                    existing.enrolled_at = datetime.utcnow()
+                    await db.commit()
+                    logger.info(f"Face embedding updated after race condition for user {current_user.email}")
+                else:
+                    raise  # Si aún no existe, re-lanzar el error original
+            else:
+                raise  # Re-lanzar otros errores de commit
 
         return schemas.FaceRegistrationResponse(
             success=True,
